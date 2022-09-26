@@ -6,7 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
-        * A very simple c l i e n t to GET JSON data from a remote s e r v e r
+        * A very simple client to GET JSON data from a remote server
+ * This code was included in the specification
         */
 public class TestClient {
     public static void main(String[] args) {

@@ -13,7 +13,13 @@ import java.net.URL;
  */
 public class App {
     public static void main(String[] args) {
-        LngLat a = new LngLat(-3.19,55.945);
-        System.out.println(a.inCentralArea());
+        Restaurant a = new Restaurant();
+        try {
+            Restaurant[] restaurants = a.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));
+            System.out.println(restaurants[0].name);
+        }
+        catch (MalformedURLException e){
+            e.printStackTrace();
+        }
     }
 }

@@ -38,7 +38,7 @@ public record LngLat(double longitude, double latitude){
         return Math.sqrt(Math.pow(point.longitude - this.longitude,2) + Math.pow(point.latitude - this.latitude,2));
     }
 
-    // returns whether or not the distance between this and another point is strictly less than 0.00015 degrees
+    // returns whether the distance between this and another point is strictly less than 0.00015 degrees
     public boolean closeTo(LngLat point){
         if (this.distanceTo(point) < 0.00015) {
             return true;

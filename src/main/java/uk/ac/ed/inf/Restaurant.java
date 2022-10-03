@@ -18,23 +18,18 @@ public class Restaurant {
     public double latitude;
     public Menu[] menu;
 
-    //no parameter constructor needed for JSON Object-Mapper
+    /**
+     * Default constructor for Restaurant.
+     */
     public Restaurant(){
 
     };
 
-    public Restaurant(String name, double longitude, double latitude, Menu[] menu){
-        this.name = name;
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.menu = menu;
-    };
-
     /**
-     * getRestaurantsFromServer performs a REST-request, retrieves the list of restaurants as a JSON, deserializes this
-     * into an array of Restaurant objects and then returns this array
-     * @param serverBaseAddress the base address, this has 'restaurants/' added to it and then a REST-request is made to this full address
-     * @return an array of Restaurant objects that can be ordered from
+     * Performs a REST-request, retrieves the list of restaurants as a JSON, deserializes this
+     * into an array of Restaurant objects and then returns this array.
+     * @param serverBaseAddress The base address, this has 'restaurants/' added to it and then a REST-request is made to this full address.
+     * @return An array of Restaurant objects that can be ordered from.
      */
     public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress){
         try {

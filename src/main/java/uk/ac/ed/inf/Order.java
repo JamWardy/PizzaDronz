@@ -5,12 +5,12 @@ package uk.ac.ed.inf;
  */
 public class Order {
     /**
-     *getDeliveryCost returns the cost in pence of having a set of items (passed as a parameter)
-     * ordered from a set of restaurants (also passed as a parameter) if it is possible to deliver all those items
-     * throws an InvalidPizzaCombinationException if not all items ordered belong to the same restaurant
-     * @param restaurants is an array containing all the restaurants it is possible to order from
-     * @param orderItems these are the names of the items that have been ordered, all passed in individually. There should be between 1 and 4 of these items and they should all be from the same restaurant
-     * @return the cost in pence of having all the items delivered, if it is a valid delivery
+     * Returns the cost in pence of having a set of items (passed as a parameter)
+     * ordered from a set of restaurants (also passed as a parameter) if it is possible to deliver all those items.
+     * Throws an InvalidPizzaCombinationException if not all items ordered belong to the same restaurant.
+     * @param restaurants An array containing all the restaurants it is possible to order from.
+     * @param orderItems These are the names of the items that have been ordered, all passed in individually. There should be between 1 and 4 of these items and they should all be from the same restaurant.
+     * @return The cost in pence of having all the items delivered, if it is a valid delivery.
      */
     public static int getDeliveryCost(Restaurant[] restaurants, String... orderItems){
         int cost = 0;

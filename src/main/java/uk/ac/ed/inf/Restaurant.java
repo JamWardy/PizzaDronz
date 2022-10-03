@@ -8,7 +8,7 @@ import java.net.URL;
 
 /**
  * Restaurant class used to represent the results from the REST-request. Has the attributes name, longitude, latitude
- * and a list of menu objects of menu items
+ * and an array of Menu objects on offer by the restaurant.
  */
 
 public class Restaurant {
@@ -51,8 +51,8 @@ public class Restaurant {
     }
 
     /**
-     * getMenu() returns that restaurant's list of menu items as an array of Menu objects
-     * @return an array of Menu objects
+     * Returns that restaurant's list of menu items as an array of Menu objects.
+     * @return An array of Menu objects.
      */
     public Menu[] getMenu(){
         return this.menu;

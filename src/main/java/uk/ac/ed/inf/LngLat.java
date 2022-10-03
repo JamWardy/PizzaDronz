@@ -6,25 +6,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.lang.Math;
 
 /**
- * represents a point as a latitude and longitude pair of co-ordinates
- * @param longitude the longitude of the point
- * @param latitude the latitude of the point
+ * Represents a point as a latitude and longitude pair of co-ordinates.
+ * @param longitude The longitude of the point.
+ * @param latitude The latitude of the point.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record LngLat(double longitude, double latitude){
     /**
-     * Constructor method
-     * @param longitude the longitude of the point
-     * @param latitude the latitude of the point
-     */
-    public LngLat(double longitude, double latitude){
-        this.longitude = longitude;
-        this.latitude = latitude;
-    }
-
-    /**
-     * method returns whether the point represented by this LngLat object is within the central area, which is represented by the CentralArea class
-     * @return boolean value for whether the point defined by this LngLat object is within the central area
+     * Returns whether the point represented by this LngLat object is within the central area, which is represented by the CentralArea class.
+     * @return Boolean value for whether the point defined by this LngLat object is within the central area.
      */
     public boolean inCentralArea(){
         CentralArea centralArea = CentralArea.getInstance();
@@ -46,17 +36,18 @@ public record LngLat(double longitude, double latitude){
     }
 
     /**
-     * @param point the point which the distance to is being calculated
-     * @return Euclidean distance between this point and the point inputted as a parameter as a double
+     * Returns the distance in degrees between this point and another point.
+     * @param point The point to which the distance is being calculated.
+     * @return Euclidean distance between this point and the point inputted as a parameter as a double.
      */
     public double distanceTo(LngLat point){
         return Math.sqrt(Math.pow(point.longitude - this.longitude,2) + Math.pow(point.latitude - this.latitude,2));
     }
 
     /**
-     * returns whether the distance between this and another point is strictly less than 0.00015 degrees
-     * @param point the point which we are seeing if this point is close to
-     * @return a boolean for if this point is close to the point inputted as a parameter
+     * Returns whether the distance between this and another point is strictly less than 0.00015 degrees.
+     * @param point The point which we are seeing if this point is close to.
+     * @return A boolean for if this point is close to the point inputted as a parameter.
      */
     public boolean closeTo(LngLat point){
         if (this.distanceTo(point) < 0.00015) {
@@ -67,8 +58,10 @@ public record LngLat(double longitude, double latitude){
         }
     }
 
-    /* return a LngLat object for the position of the drone after a move of an inputted number of degrees
-    New positon calculated by adding the cosine of the move times 0.00015 degrees to the longitude, and the sine of the same to the latitude
+    /**
+     * Returns a LngLat object for the position of the drone after a move of an inputted number of degrees.
+     * @param move The angle at which the drone moves.
+     * @return A LngLat object with the new position of the drone.
      */
     public LngLat nextPosition(double move){
         double newLongitude = this.longitude + Math.cos(move) * 0.00015;

@@ -6,9 +6,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-/*
-Restaurant class used to represent the results from the REST-request. Has the attributes name, longitude, latitude
-and a list of menu objects of menu items
+/**
+ * Restaurant class used to represent the results from the REST-request. Has the attributes name, longitude, latitude
+ * and a list of menu objects of menu items
  */
 
 public class Restaurant {
@@ -30,10 +30,13 @@ public class Restaurant {
         this.menu = menu;
     };
 
-    /* getRestaurantsFromServer returns a list of restaurant objects returned from the REST-request of the URL
-    passed into the function
+    /**
+     * getRestaurantsFromServer performs a REST-request, retrieves the list of restaurants as a JSON, deserializes this
+     * into an array of Restaurant objects and then returns this array
+     * @param serverBaseAddress the base address, this has 'restaurants/' added to it and then a REST-request is made to this full address
+     * @return an array of Restaurant objects that can be ordered from
      */
-    Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress){
+    public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress){
         try {
             //adds a / to the base url if there is not one already
             if (!serverBaseAddress.toString().endsWith("/")) {
@@ -50,5 +53,13 @@ public class Restaurant {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * getMenu() returns that restaurant's list of menu items as an array of Menu objects
+     * @return an array of Menu objects
+     */
+    public Menu[] getMenu(){
+        return this.menu;
     }
 }

@@ -13,11 +13,9 @@ import java.net.URL;
  */
 public class App {
     public static void main(String[] args) {
-        Restaurant a = new Restaurant();
         try {
-            Restaurant[] restaurants = a.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));
-            Order b = new Order();
-            System.out.println(b.getDeliveryCost(restaurants, "Margarita", "All Shrooms"));
+            Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));
+            System.out.println(Order.getDeliveryCost(restaurants, "Margarita", "All Shrooms"));
         }
         catch (MalformedURLException e){
             e.printStackTrace();

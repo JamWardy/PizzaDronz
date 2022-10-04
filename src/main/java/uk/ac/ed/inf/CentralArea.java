@@ -43,5 +43,4 @@ public class CentralArea {
             return instance;
         }
     }
-
 }

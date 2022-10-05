@@ -55,7 +55,7 @@ public record LngLat(double longitude, double latitude){
 
     /**
      * Returns a LngLat object for the position of the drone after a move of an inputted number of degrees.
-     * @param move The angle at which the drone moves.
+     * @param move The angle in degrees at which the drone moves.
      * @return A LngLat object with the new position of the drone.
      */
     public LngLat nextPosition(double move){

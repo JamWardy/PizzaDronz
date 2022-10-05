@@ -15,7 +15,7 @@ public class App {
     public static void main(String[] args) {
         try {
             Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));
-            System.out.println(Order.getDeliveryCost(restaurants, "Margarita", "All Shrooms"));
+            System.out.println(Order.getDeliveryCost(restaurants,"Margarita","Margarita","Margarita","Margarita","Margarita"));
         }
         catch (MalformedURLException e){
             e.printStackTrace();

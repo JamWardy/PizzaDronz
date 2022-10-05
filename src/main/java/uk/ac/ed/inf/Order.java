@@ -13,6 +13,12 @@ public class Order {
      * @return The cost in pence of having all the items delivered, if it is a valid delivery.
      */
     public static int getDeliveryCost(Restaurant[] restaurants, String... orderItems){
+        if (orderItems.length == 0){
+            throw new InvalidPizzaCombinationException("No Pizzas Ordered");
+        }
+        else if(orderItems.length > 4){
+            throw new InvalidPizzaCombinationException("Too Many Pizzas Ordered");
+        }
         int cost = 0;
         //check if all order items are from the same restaurant
         boolean sameRestaurant = true;

@@ -50,12 +50,7 @@ public record LngLat(double longitude, double latitude){
      * @return A boolean for if this point is close to the point inputted as a parameter.
      */
     public boolean closeTo(LngLat point){
-        if (this.distanceTo(point) < 0.00015) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return (this.distanceTo(point) < 0.00015);
     }
 
     /**
@@ -64,8 +59,8 @@ public record LngLat(double longitude, double latitude){
      * @return A LngLat object with the new position of the drone.
      */
     public LngLat nextPosition(double move){
-        double newLongitude = this.longitude + Math.cos(move) * 0.00015;
-        double newLatitude = this.latitude + Math.sin(move) * 0.00015;
+        double newLongitude = this.longitude + Math.cos(Math.toRadians(move)) * 0.00015;
+        double newLatitude = this.latitude + Math.sin(Math.toRadians(move)) * 0.00015;
         LngLat newPosition = new LngLat(newLongitude, newLatitude);
         return newPosition;
     }

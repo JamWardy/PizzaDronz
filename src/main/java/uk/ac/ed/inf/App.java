@@ -13,9 +13,14 @@ import java.net.URL;
  */
 public class App {
     public static void main(String[] args) {
+        String date = args[0];
+        String baseUrl = args[1];
+        if (!baseUrl.endsWith("/")){
+            baseUrl += "/";
+        }
         try {
-            Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));
-            System.out.println(Order.getDeliveryCost(restaurants,"Margarita","Margarita","Margarita","Margarita","Margarita"));
+            Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrl));
+            System.out.println(Order.getDeliveryCost(restaurants,"Margarita","Margarita"));
         }
         catch (MalformedURLException e){
             e.printStackTrace();

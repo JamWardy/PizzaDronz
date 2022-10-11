@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.lang.Math;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Represents a point as a latitude and longitude pair of co-ordinates.
@@ -15,9 +17,10 @@ public record LngLat(double longitude, double latitude){
     /**
      * Returns whether the point represented by this LngLat object is within the central area, which is represented by the CentralArea class.
      * @return Boolean value for whether the point defined by this LngLat object is within the central area.
+     * @param url The URL that the central area co-ordinates are accessed from
      */
-    public boolean inCentralArea(){
-        CentralArea centralArea = CentralArea.getInstance();
+    public boolean inCentralArea(URL url){
+        CentralArea centralArea = CentralArea.getInstance(url);
         if (this.longitude <= centralArea.points[0].longitude || this.latitude >= centralArea.points[0].latitude){
             return false;
         }
@@ -32,6 +35,20 @@ public record LngLat(double longitude, double latitude){
         }
         else{
             return true;
+        }
+    }
+
+    /**
+     * Default method for when no URL is passed as a parameter, calls inCentralArea(url) with a default url value.
+     * @return Boolean value for whether the point defined by this LngLat object is within the central area.
+     */
+    public boolean inCentralArea() {
+        try {
+            URL url = new URL("https://ilp-rest.azurewebsites.net/centralArea");
+            return inCentralArea(url);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

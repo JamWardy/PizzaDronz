@@ -17,10 +17,8 @@ public class CentralArea {
      * Private constructor class for CentralArea, this performs a REST-request which gets a JSON of the longitude and latitude
      * co-ordinates of the corners of the central area and converts this into an array of LngLat objects.
      */
-    private CentralArea(){
+    private CentralArea(URL url){
         try {
-            // create URL object for the central area url
-            URL url = new URL("https://ilp-rest.azurewebsites.net/centralArea");
             // perform REST-request and turn result into array of LngLat objects, setting the points attribute to this array
             points = new ObjectMapper().readValue(url, LngLat[].class);
         } catch (MalformedURLException e) {
@@ -34,11 +32,13 @@ public class CentralArea {
      * Singleton getInstance method, which ensures that only one REST-request to get the CentralArea is performed per application run.
      * @return The Singleton CentralArea object, which contains the co-ordinates of the central area.
      */
-    public static CentralArea getInstance(){
+    public static CentralArea getInstance(URL url){
+        // if there currently does not exist an instance of the CentralArea class, create one
         if (instance == null){
-            instance = new CentralArea();
+            instance = new CentralArea(url);
             return instance;
         }
+        // otherwise return the existing instance of the CentralArea class
         else{
             return instance;
         }

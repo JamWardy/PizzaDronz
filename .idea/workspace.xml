@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="8680578b-c228-4be2-b0fc-e619754ddc19" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/Order.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/Restaurant.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/uk/ac/ed/inf/Restaurant.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,17 +137,17 @@
     </configuration>
     <list>
       <item itemvalue="Application.App" />
-      <item itemvalue="JUnit.AppTest.testGetThreeRestaurants" />
-      <item itemvalue="JUnit.AppTest.testCentralArea" />
       <item itemvalue="JUnit.AppTest" />
+      <item itemvalue="JUnit.AppTest.testCentralArea" />
+      <item itemvalue="JUnit.AppTest.testGetThreeRestaurants" />
       <item itemvalue="JUnit.AppTest.testMoves" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Application.App" />
+        <item itemvalue="JUnit.AppTest" />
         <item itemvalue="JUnit.AppTest.testGetThreeRestaurants" />
         <item itemvalue="JUnit.AppTest.testCentralArea" />
-        <item itemvalue="JUnit.AppTest" />
         <item itemvalue="JUnit.AppTest.testMoves" />
       </list>
     </recent_temporary>

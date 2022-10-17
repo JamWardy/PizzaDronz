@@ -42,8 +42,6 @@ public class Restaurant {
             // get JSON from REST-request and parse this into an array of Restaurant objects
             Restaurant[] restaurants = new ObjectMapper().readValue(restaurantAddress, Restaurant[].class);
             return restaurants;
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

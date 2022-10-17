@@ -1,9 +1,33 @@
 package uk.ac.ed.inf;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jdk.jshell.execution.LoaderDelegate;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.time.*;
+
 /**
  * Class which contains the getDeliveryCost() method
  */
 public class Order {
+    public String orderNo;
+    public String orderDate;
+    public String customer;
+    public String creditCardNumber;
+    public String creditCardExpiry;
+    public String cvv;
+    public int priceTotalInPence;
+    public String[] orderItems;
+
+    public Order(){};
+
     /**
      * Returns the cost in pence of having a set of items (passed as a parameter)
      * ordered from a set of restaurants (also passed as a parameter) if it is possible to deliver all those items.
@@ -46,5 +70,67 @@ public class Order {
             }
         }
         throw new InvalidPizzaCombinationException("Invalid Pizza Combination");
+    }
+
+    public static Order[] getOrders(URL baseUrl, String date){
+        try{
+            URL url = new URL(baseUrl.toString() + "orders/" + date);
+            Order[] orders = new ObjectMapper().readValue(url, Order[].class);
+            return orders;
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            return new Order[0];
+        }
+    }
+
+    public boolean isCVVValid(){
+        return cvv.matches("\\d{3}");
+    }
+
+    public boolean isCardNumberValid(){
+        return creditCardNumber.matches("\\d{8}");
+    }
+
+    public boolean isCardExpiryValid(String date){
+        try {
+            LocalDate expiryDate = YearMonth.parse(creditCardExpiry, DateTimeFormatter.ofPattern("MM/yy")).atEndOfMonth();
+            LocalDate orderDate = LocalDate.parse(date);
+            return expiryDate.isAfter(orderDate);
+        } catch(Exception e){
+            return false;
+        }
+    }
+
+    public boolean isPizzaValid(String pizza, Restaurant[] restaurants){
+        for (Restaurant restaurant: restaurants){
+            for (Menu menu: restaurant.getMenu()){
+                if (menu.name.equals(pizza)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean pizzasDefined(String[] pizzas, Restaurant[] restaurants){
+        for (String pizza: pizzas){
+            if (!isPizzaValid(pizza, restaurants)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean validPizzaCount(String[] pizzas){
+        return (pizzas.length >= 1 && pizzas.length <= 4);
+    }
+
+    public boolean sameSuppliers(String[] pizzas, Restaurant[] restaurants){
+        try {
+            return (Order.getDeliveryCost(restaurants, pizzas) == priceTotalInPence);
+        } catch(InvalidPizzaCombinationException e){
+            return false;
+        }
     }
 }

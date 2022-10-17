@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 /**
  * Hello world!
@@ -15,18 +16,19 @@ public class App {
     public static void main(String[] args) {
         String date = args[0];
         String baseUrlStr = args[1];
-        System.out.println(args[1]);
-        if (!baseUrlStr.endsWith("/")){
+        if (!baseUrlStr.endsWith("/")) {
             baseUrlStr += "/";
         }
         try {
-            URL baseUrl = new URL(baseUrlStr);
-            Order[] orders = Order.getOrders(baseUrl, date);
-            for (Order order: orders){
-                System.out.println(order.isCardExpiryValid(date));
+            Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
+            Order[] orders = Order.getOrders(baseUrlStr, date);
+            Delivery[] deliveries = new Delivery[orders.length];
+            for (int i = 0; i < orders.length; i++) {
+                deliveries[i] = new Delivery(orders[i].orderNo, orders[i].getValidity(restaurants), orders[i].priceTotalInPence);
             }
-        }
-        catch (MalformedURLException e){
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(Paths.get("resultfiles/deliveries-" + date + ".json").toFile(), deliveries);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

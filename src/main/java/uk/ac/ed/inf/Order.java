@@ -72,9 +72,9 @@ public class Order {
         throw new InvalidPizzaCombinationException("Invalid Pizza Combination");
     }
 
-    public static Order[] getOrders(URL baseUrl, String date){
+    public static Order[] getOrders(String baseUrl, String date){
         try{
-            URL url = new URL(baseUrl.toString() + "orders/" + date);
+            URL url = new URL(baseUrl + "orders/" + date);
             Order[] orders = new ObjectMapper().readValue(url, Order[].class);
             return orders;
         }
@@ -89,7 +89,7 @@ public class Order {
     }
 
     public boolean isCardNumberValid(){
-        return creditCardNumber.matches("\\d{8}");
+        return creditCardNumber.matches("\\d{16}");
     }
 
     public boolean isCardExpiryValid(String date){
@@ -113,8 +113,8 @@ public class Order {
         return false;
     }
 
-    public boolean pizzasDefined(String[] pizzas, Restaurant[] restaurants){
-        for (String pizza: pizzas){
+    public boolean pizzasDefined(Restaurant[] restaurants){
+        for (String pizza: orderItems){
             if (!isPizzaValid(pizza, restaurants)){
                 return false;
             }
@@ -122,15 +122,52 @@ public class Order {
         return true;
     }
 
-    public boolean validPizzaCount(String[] pizzas){
-        return (pizzas.length >= 1 && pizzas.length <= 4);
+    public boolean validPizzaCount(){
+        return (orderItems.length >= 1 && orderItems.length <= 4);
     }
 
-    public boolean sameSuppliers(String[] pizzas, Restaurant[] restaurants){
+    public boolean sameSuppliers(Restaurant[] restaurants){
         try {
-            return (Order.getDeliveryCost(restaurants, pizzas) == priceTotalInPence);
+            Order.getDeliveryCost(restaurants, orderItems);
+            return true;
         } catch(InvalidPizzaCombinationException e){
             return false;
+        }
+    }
+
+    public boolean correctTotal(Restaurant[] restaurants){
+        try{
+            return (Order.getDeliveryCost(restaurants, orderItems) == priceTotalInPence);
+        }
+        catch (InvalidPizzaCombinationException e){
+            return false;
+        }
+    }
+
+    public String getValidity(Restaurant[] restaurants){
+        if (!isCardNumberValid()){
+            return OrderOutcome.InvalidCardNumber.toString();
+        }
+        else if (!isCardExpiryValid(orderDate)){
+            return OrderOutcome.InvalidExpiryDate.toString();
+        }
+        else if (!isCVVValid()){
+            return OrderOutcome.InvalidCvv.toString();
+        }
+        else if (!validPizzaCount()){
+            return OrderOutcome.InvalidPizzaCount.toString();
+        }
+        else if (!pizzasDefined(restaurants)){
+            return OrderOutcome.InvalidPizzaNotDefined.toString();
+        }
+        else if (!sameSuppliers(restaurants)){
+            return OrderOutcome.InvalidPizzaCombinationMultipleSuppliers.toString();
+        }
+        else if(!correctTotal(restaurants)){
+            return OrderOutcome.InvalidTotal.toString();
+        }
+        else {
+            return "Valid";
         }
     }
 }

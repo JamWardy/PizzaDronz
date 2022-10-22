@@ -31,5 +31,15 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        DroneMove[] flightpath = new DroneMove[2000];
+        LngLat[] coordinates = new LngLat[2000];
+        LngLat position = new LngLat(-3.186874, 55.944494);
+        for (int i = 0; i < 100; i++){
+            LngLat newPosition = position.nextPosition(0);
+            flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i+1);
+            coordinates[i] = new LngLat(position.longitude(), position.latitude());
+            position = newPosition;
+        }
+        String jSon = LineString.fromLngLats(coordinates);
     }
 }

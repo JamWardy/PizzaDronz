@@ -3,10 +3,14 @@ package uk.ac.ed.inf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import com.mapbox.geojson.*;
+import java.util.*;
 
 /**
  * Hello world!
@@ -32,14 +36,22 @@ public class App {
             e.printStackTrace();
         }
         DroneMove[] flightpath = new DroneMove[2000];
-        LngLat[] coordinates = new LngLat[2000];
+        List<Point> coordinates = new ArrayList<Point>();
         LngLat position = new LngLat(-3.186874, 55.944494);
         for (int i = 0; i < 100; i++){
             LngLat newPosition = position.nextPosition(0);
             flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i+1);
-            coordinates[i] = new LngLat(position.longitude(), position.latitude());
+            coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
             position = newPosition;
         }
-        String jSon = LineString.fromLngLats(coordinates);
+        LineString lineString = LineString.fromLngLats(coordinates);
+        String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
+        try{
+            FileWriter filewriter = new FileWriter("resultfiles/drone-" + date + ".geojson");
+            filewriter.write(json);
+            filewriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

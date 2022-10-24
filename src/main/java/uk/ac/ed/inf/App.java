@@ -38,14 +38,38 @@ public class App {
         DroneMove[] flightpath = new DroneMove[2000];
         List<Point> coordinates = new ArrayList<Point>();
         LngLat position = new LngLat(-3.186874, 55.944494);
-        for (int i = 0; i < 100; i++){
-            LngLat newPosition = position.nextPosition(0);
+        for (int i = 0; i < 500; i++){
+            LngLat newPosition = position.nextPosition(i);
             flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i+1);
             coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
             position = newPosition;
         }
         LineString lineString = LineString.fromLngLats(coordinates);
         String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
+        try{
+            URL noflyurl = new URL(baseUrlStr + "noFlyZones");
+            System.out.println(noflyurl.toString());
+            NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
+            List<Feature> features = new ArrayList<Feature>(){};
+            for (NoFlyZone zone: noFlyZone){
+                List<List<Point>> points = new ArrayList<>();
+                points.add(new ArrayList<>());
+                for (double[] point: zone.coordinates) {
+                    points.get(0).add(Point.fromLngLat(point[0], point[1]));
+                }
+                features.add(Feature.fromGeometry(Polygon.fromLngLats(points)));
+            }
+            FileWriter filewriter = new FileWriter("resultfiles/noFlyZones-" + date + ".geojson");
+            filewriter.write(FeatureCollection.fromFeatures(features).toJson());
+            filewriter.close();
+            System.out.println(noFlyZone[0].name);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeResultFile(String json, String date){
         try{
             FileWriter filewriter = new FileWriter("resultfiles/drone-" + date + ".geojson");
             filewriter.write(json);

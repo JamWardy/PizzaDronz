@@ -26,43 +26,37 @@ public class App {
         try {
             Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
             Order[] orders = Order.getOrders(baseUrlStr, date);
-            Delivery[] deliveries = new Delivery[orders.length];
-            for (int i = 0; i < orders.length; i++) {
-                deliveries[i] = new Delivery(orders[i].orderNo, orders[i].getValidity(restaurants), orders[i].priceTotalInPence);
-            }
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(Paths.get("resultfiles/deliveries-" + date + ".json").toFile(), deliveries);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        DroneMove[] flightpath = new DroneMove[2000];
-        List<Point> coordinates = new ArrayList<Point>();
-        LngLat position = new LngLat(-3.186874, 55.944494);
-        for (int i = 0; i < 500; i++){
-            LngLat newPosition = position.nextPosition(i);
-            flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i+1);
-            coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
-            position = newPosition;
-        }
-        LineString lineString = LineString.fromLngLats(coordinates);
-        String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
-        try{
-            URL noflyurl = new URL(baseUrlStr + "noFlyZones");
-            System.out.println(noflyurl.toString());
-            NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
-            List<Feature> features = new ArrayList<Feature>(){};
-            for (NoFlyZone zone: noFlyZone){
-                List<List<Point>> points = new ArrayList<>();
-                points.add(new ArrayList<>());
-                for (double[] point: zone.coordinates) {
-                    points.get(0).add(Point.fromLngLat(point[0], point[1]));
+            Delivery[] deliveries = getDeliveries(orders, restaurants);
+            /** do this later
+             writeDeliveries(date, deliveries);
+             */
+            DroneMove[] flightpath = new DroneMove[2000];
+            List<Point> coordinates = new ArrayList<Point>();
+            LngLat position = new LngLat(-3.186874, 55.944494);
+            LngLat goal = new LngLat(restaurants[0].longitude, restaurants[0].latitude);
+            //for (Delivery delivery: deliveries) {
+                /*LngLat newPosition = position.nextPosition(i);
+                flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i + 1);
+                coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                position = newPosition;
+                 */
+            //}
+            int i = 0;
+            for (Restaurant restaurant: restaurants) {
+                goal = new LngLat(restaurant.longitude, restaurant.latitude);
+                while (!position.closeTo(goal)) {
+                    float bestMove = findBestMove(position, goal);
+                    LngLat newPosition = position.nextPosition(findBestMove(position, goal));
+                    flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
+                    coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                    position = newPosition;
                 }
-                features.add(Feature.fromGeometry(Polygon.fromLngLats(points)));
+                System.out.println(position.distanceTo(goal));
             }
-            FileWriter filewriter = new FileWriter("resultfiles/noFlyZones-" + date + ".geojson");
-            filewriter.write(FeatureCollection.fromFeatures(features).toJson());
-            filewriter.close();
-            System.out.println(noFlyZone[0].name);
+            LineString lineString = LineString.fromLngLats(coordinates);
+            String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
+            FeatureCollection noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
+            writeResultFile(json, date);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -77,5 +71,34 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static Delivery[] getDeliveries(Order[] orders, Restaurant[] restaurants){
+        Delivery[] deliveries = new Delivery[orders.length];
+        for (int i = 0; i < orders.length; i++) {
+            deliveries[i] = new Delivery(orders[i].orderNo, orders[i].getValidity(restaurants), orders[i].priceTotalInPence);
+        }
+        return deliveries;
+    }
+
+    public static void writeDeliveries(String date, Delivery[] deliveries){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(Paths.get("resultfiles/deliveries-" + date + ".json").toFile(), deliveries);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static float findBestMove(LngLat position, LngLat goal){
+        float bestMove = 0;
+        double bestDistance = position.nextPosition(0).distanceTo(goal);
+        for (float i = (float) 22.5; i < 360; i += 22.5){
+            if (position.nextPosition(i).distanceTo(goal) < bestDistance){
+                bestMove = i;
+                bestDistance = position.nextPosition(i).distanceTo(goal);
+            }
+        }
+        return bestMove;
     }
 }

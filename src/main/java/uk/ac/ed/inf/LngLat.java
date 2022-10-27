@@ -2,10 +2,19 @@ package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
+import com.mapbox.geojson.Polygon;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.Math;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a point as a latitude and longitude pair of co-ordinates.
@@ -76,9 +85,36 @@ public record LngLat(double longitude, double latitude){
      * @return A LngLat object with the new position of the drone.
      */
     public LngLat nextPosition(double move){
-        double newLongitude = this.longitude + Math.cos(Math.toRadians(move)) * 0.00015;
-        double newLatitude = this.latitude + Math.sin(Math.toRadians(move)) * 0.00015;
-        LngLat newPosition = new LngLat(newLongitude, newLatitude);
-        return newPosition;
+        if (move == -1){
+            return (new LngLat(this.longitude, this.latitude));
+        }
+        else {
+            double newLongitude = this.longitude + Math.cos(Math.toRadians(move)) * 0.00015;
+            double newLatitude = this.latitude + Math.sin(Math.toRadians(move)) * 0.00015;
+            LngLat newPosition = new LngLat(newLongitude, newLatitude);
+            return newPosition;
+        }
+    }
+
+    public static FeatureCollection getNoFlyZone(String baseUrlStr, String date){
+        try{
+            URL noflyurl = new URL(baseUrlStr + "noFlyZones");
+            System.out.println(noflyurl.toString());
+            NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
+            List<Feature> features = new ArrayList<Feature>(){};
+            for (NoFlyZone zone: noFlyZone){
+                List<List<Point>> points = new ArrayList<>();
+                points.add(new ArrayList<>());
+                for (double[] point: zone.coordinates) {
+                    points.get(0).add(Point.fromLngLat(point[0], point[1]));
+                }
+                features.add(Feature.fromGeometry(Polygon.fromLngLats(points)));
+            }
+            return FeatureCollection.fromFeatures(features);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

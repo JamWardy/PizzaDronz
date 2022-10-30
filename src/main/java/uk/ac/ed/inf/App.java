@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import com.mapbox.geojson.*;
+import com.mapbox.turf.*;
 import java.util.*;
 
 /**
@@ -33,7 +34,6 @@ public class App {
             DroneMove[] flightpath = new DroneMove[5000];
             List<Point> coordinates = new ArrayList<Point>();
             LngLat position = new LngLat(-3.186874, 55.944494);
-            LngLat goal = new LngLat(restaurants[0].longitude, restaurants[0].latitude);
             //for (Delivery delivery: deliveries) {
                 /*LngLat newPosition = position.nextPosition(i);
                 flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i + 1);
@@ -42,34 +42,49 @@ public class App {
                  */
             //}
             int i = 0;
+            MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
             for (Order order: orders) {
                 if (order.getValidity(restaurants).equals("Valid")) {
+                    List<LngLat> explored = new ArrayList<LngLat>();
                     Restaurant restaurant = getRestaurant(order, restaurants);
-                    goal = new LngLat(restaurant.longitude, restaurant.latitude);
+                    LngLat goal = new LngLat(restaurant.longitude, restaurant.latitude);
                     while (!position.closeTo(goal)) {
-                        float bestMove = findBestMove(position, goal);
-                        LngLat newPosition = position.nextPosition(findBestMove(position, goal));
+                        float bestMove = findBestMove(position, goal, noFlyZone, explored);
+                        LngLat newPosition = position.nextPosition(bestMove);
                         flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                        explored.add(position);
+                        //System.out.println(bestMove);
                         position = newPosition;
                     }
                     goal = new LngLat(-3.186874, 55.944494);
+                    explored = new ArrayList<LngLat>();
                     while (!position.closeTo(goal)) {
-                        float bestMove = findBestMove(position, goal);
-                        LngLat newPosition = position.nextPosition(findBestMove(position, goal));
+                        //System.out.println(position);
+                        float bestMove = findBestMove(position, goal, noFlyZone, explored);
+                        LngLat newPosition = position.nextPosition(bestMove);
                         flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                        explored.add(position);
                         position = newPosition;
                     }
                 }
             }
             LineString lineString = LineString.fromLngLats(coordinates);
             String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
-            FeatureCollection noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
             writeResultFile(json, date);
             writeDeliveries(date, deliveries);
+            Feature path = Feature.fromGeometry((Geometry) lineString);
+            Feature noflypolygon = Feature.fromGeometry((MultiPolygon) noFlyZone);
+            List<Feature> features = new ArrayList<Feature>();
+            features.add(path);
+            features.add(noflypolygon);
+            String combinedJson = FeatureCollection.fromFeatures(features).toJson();
+            FileWriter combinedWriter = new FileWriter("resultfiles/combined-" + date + ".geojson");
+            combinedWriter.write(combinedJson);
+            combinedWriter.close();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -103,13 +118,24 @@ public class App {
         }
     }
 
-    public static float findBestMove(LngLat position, LngLat goal){
-        float bestMove = 0;
-        double bestDistance = position.nextPosition(0).distanceTo(goal);
+    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored){
+        float bestMove = -1;
+        double bestDistance = 1000;
         for (float i = (float) 22.5; i < 360; i += 22.5){
-            if (position.nextPosition(i).distanceTo(goal) < bestDistance){
-                bestMove = i;
-                bestDistance = position.nextPosition(i).distanceTo(goal);
+            boolean visited = false;
+            for (LngLat point: explored){
+                if (position.nextPosition(i).closeTo(point)){
+                    visited = true;
+                    break;
+                }
+            }
+            if (!visited) {
+                if (!TurfJoins.inside(Point.fromLngLat(position.nextPosition(i).longitude(), position.nextPosition(i).latitude()), noFlyZone)) {
+                    if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
+                        bestMove = i;
+                        bestDistance = position.nextPosition(i).distanceTo(goal);
+                    }
+                }
             }
         }
         return bestMove;

@@ -3,10 +3,7 @@ package uk.ac.ed.inf;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.Point;
-import com.mapbox.geojson.Polygon;
+import com.mapbox.geojson.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -96,21 +93,21 @@ public record LngLat(double longitude, double latitude){
         }
     }
 
-    public static FeatureCollection getNoFlyZone(String baseUrlStr, String date){
+    public static MultiPolygon getNoFlyZone(String baseUrlStr, String date){
         try{
             URL noflyurl = new URL(baseUrlStr + "noFlyZones");
             System.out.println(noflyurl.toString());
             NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
-            List<Feature> features = new ArrayList<Feature>(){};
+            List<Polygon> polygons = new ArrayList<Polygon>(){};
             for (NoFlyZone zone: noFlyZone){
                 List<List<Point>> points = new ArrayList<>();
                 points.add(new ArrayList<>());
                 for (double[] point: zone.coordinates) {
                     points.get(0).add(Point.fromLngLat(point[0], point[1]));
                 }
-                features.add(Feature.fromGeometry(Polygon.fromLngLats(points)));
+                polygons.add(Polygon.fromLngLats(points));
             }
-            return FeatureCollection.fromFeatures(features);
+            return MultiPolygon.fromPolygons(polygons);
         }
         catch (IOException e) {
             e.printStackTrace();

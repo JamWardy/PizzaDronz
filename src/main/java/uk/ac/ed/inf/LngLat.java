@@ -96,7 +96,6 @@ public record LngLat(double longitude, double latitude){
     public static MultiPolygon getNoFlyZone(String baseUrlStr, String date){
         try{
             URL noflyurl = new URL(baseUrlStr + "noFlyZones");
-            System.out.println(noflyurl.toString());
             NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
             List<Polygon> polygons = new ArrayList<Polygon>(){};
             for (NoFlyZone zone: noFlyZone){

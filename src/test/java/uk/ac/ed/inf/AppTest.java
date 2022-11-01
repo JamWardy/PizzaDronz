@@ -1,11 +1,15 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.LineString;
+import com.mapbox.geojson.Point;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import javax.sound.sampled.Line;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.*;
 
 /**
  * Unit test for simple App.
@@ -98,6 +102,22 @@ public class AppTest
         LngLat c = new LngLat(100,99.99985);
         assertEquals(b, a.nextPosition(0));
         assertEquals(c, a.nextPosition(270));
+    }
+
+    public void testIntersect(){
+        LngLat a = new LngLat(100,100);
+        LngLat b = new LngLat(100,105);
+        LngLat c = new LngLat(95, 102.5);
+        LngLat d = new LngLat(105, 102.5);
+        List<Point> list1 = new ArrayList<Point>();
+        list1.add(Point.fromLngLat(a.longitude(), a.latitude()));
+        list1.add(Point.fromLngLat(b.longitude(), b.latitude()));
+        LineString line1 = LineString.fromLngLats(list1);
+        List<Point> list2 = new ArrayList<Point>();
+        list2.add(Point.fromLngLat(c.longitude(), c.latitude()));
+        list2.add(Point.fromLngLat(d.longitude(), d.latitude()));
+        LineString line2 = LineString.fromLngLats(list2);
+        assertTrue(App.linesIntersect(line1, line2));
     }
 
 }

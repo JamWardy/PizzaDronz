@@ -34,13 +34,6 @@ public class App {
             DroneMove[] flightpath = new DroneMove[2000];
             List<Point> coordinates = new ArrayList<Point>();
             LngLat position = new LngLat(-3.186874, 55.944494);
-            //for (Delivery delivery: deliveries) {
-                /*LngLat newPosition = position.nextPosition(i);
-                flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), 0, newPosition.longitude(), newPosition.latitude(), i + 1);
-                coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
-                position = newPosition;
-                 */
-            //}
             int i = 0;
             MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
             for (Order order: orders) {
@@ -51,42 +44,61 @@ public class App {
                     while (!position.closeTo(goal)) {
                         float bestMove = findBestMove(position, goal, noFlyZone, explored);
                         LngLat newPosition = position.nextPosition(bestMove);
-                        flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
+                        flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
                         explored.add(position);
-                        //System.out.println(bestMove);
                         position = newPosition;
                     }
+                    flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1);
                     goal = new LngLat(-3.186874, 55.944494);
                     explored = new ArrayList<LngLat>();
                     while (!position.closeTo(goal)) {
                         //System.out.println(position);
                         float bestMove = findBestMove(position, goal, noFlyZone, explored);
                         LngLat newPosition = position.nextPosition(bestMove);
-                        flightpath[i] = new DroneMove(null, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
+                        flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
                         explored.add(position);
                         position = newPosition;
                     }
+                    flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1);
                 }
             }
             LineString lineString = LineString.fromLngLats(coordinates);
             String json = FeatureCollection.fromFeature(Feature.fromGeometry((Geometry) lineString)).toJson();
             writeResultFile(json, date);
             writeDeliveries(date, deliveries);
+            writeFlightPath(flightpath, date);
             Feature path = Feature.fromGeometry((Geometry) lineString);
             Feature noflypolygon = Feature.fromGeometry((MultiPolygon) noFlyZone);
             List<Feature> features = new ArrayList<Feature>();
             features.add(path);
             features.add(noflypolygon);
+            List<List<Point>> centralAreaPoints = new ArrayList<>();
+            centralAreaPoints.add(new ArrayList<>());
+            LngLat[] centralArea = CentralArea.getInstance(new URL(baseUrlStr + "centralArea")).points;
+            for (LngLat point: centralArea) {
+                centralAreaPoints.get(0).add(Point.fromLngLat(point.longitude(), point.latitude()));
+            }
+            centralAreaPoints.get(0).add(Point.fromLngLat(centralArea[0].longitude(), centralArea[0].latitude()));
+            features.add(Feature.fromGeometry(Polygon.fromLngLats(centralAreaPoints)));
             String combinedJson = FeatureCollection.fromFeatures(features).toJson();
             FileWriter combinedWriter = new FileWriter("resultfiles/combined-" + date + ".geojson");
             combinedWriter.write(combinedJson);
             combinedWriter.close();
         }
         catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeFlightPath(DroneMove[] flightpath, String date){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(Paths.get("resultfiles/flightpath-" + date + ".json").toFile(), flightpath);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

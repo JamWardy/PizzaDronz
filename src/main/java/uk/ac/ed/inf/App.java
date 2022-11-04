@@ -133,7 +133,7 @@ public class App {
     public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored){
         float bestMove = -1;
         double bestDistance = 1000;
-        for (float i = (float) 22.5; i < 360; i += 22.5){
+        for (float i = 0; i < 360; i += 22.5){
             boolean visited = false;
             for (LngLat point: explored){
                 if (position.nextPosition(i).closeTo(point)){

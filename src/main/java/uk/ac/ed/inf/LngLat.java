@@ -86,8 +86,8 @@ public record LngLat(double longitude, double latitude){
             return (new LngLat(this.longitude, this.latitude));
         }
         else {
-            double newLongitude = this.longitude + Math.cos(Math.toRadians(move)) * 0.00015;
-            double newLatitude = this.latitude + Math.sin(Math.toRadians(move)) * 0.00015;
+            double newLatitude = this.latitude + Math.cos(Math.toRadians(move)) * 0.00015;
+            double newLongitude = this.longitude + Math.sin(Math.toRadians(move)) * 0.00015;
             LngLat newPosition = new LngLat(newLongitude, newLatitude);
             return newPosition;
         }

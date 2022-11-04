@@ -98,8 +98,8 @@ public class AppTest
 
     public void testMoves(){
         LngLat a = new LngLat(100,100);
-        LngLat b = new LngLat(100.00015,100);
-        LngLat c = new LngLat(100,99.99985);
+        LngLat b = new LngLat(100,100.00015);
+        LngLat c = new LngLat(99.99985,100);
         assertEquals(b, a.nextPosition(0));
         assertEquals(c, a.nextPosition(270));
     }

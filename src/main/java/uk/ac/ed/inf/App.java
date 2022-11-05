@@ -71,6 +71,15 @@ public class App {
             writeResultFile(json, date);
             writeDeliveries(date, deliveries);
             writeFlightPath(flightpath, date);
+            //writeCombined(lineString, noFlyZone, baseUrlStr, date);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeCombined(LineString lineString, MultiPolygon noFlyZone, String baseUrlStr, String date){
+        try {
             Feature path = Feature.fromGeometry((Geometry) lineString);
             Feature noflypolygon = Feature.fromGeometry((MultiPolygon) noFlyZone);
             List<Feature> features = new ArrayList<Feature>();
@@ -79,7 +88,7 @@ public class App {
             List<List<Point>> centralAreaPoints = new ArrayList<>();
             centralAreaPoints.add(new ArrayList<>());
             LngLat[] centralArea = CentralArea.getInstance(new URL(baseUrlStr + "centralArea")).points;
-            for (LngLat point: centralArea) {
+            for (LngLat point : centralArea) {
                 centralAreaPoints.get(0).add(Point.fromLngLat(point.longitude(), point.latitude()));
             }
             centralAreaPoints.get(0).add(Point.fromLngLat(centralArea[0].longitude(), centralArea[0].latitude()));
@@ -89,7 +98,7 @@ public class App {
             combinedWriter.write(combinedJson);
             combinedWriter.close();
         }
-        catch (IOException e) {
+        catch (Exception e){
             e.printStackTrace();
         }
     }

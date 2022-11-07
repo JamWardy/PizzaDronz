@@ -31,12 +31,13 @@ public class App {
             /** do this later
              writeDeliveries(date, deliveries);
              */
-            DroneMove[] flightpath = new DroneMove[2000];
+            List<DroneMove> flightpath = new ArrayList<>();
             List<Point> coordinates = new ArrayList<Point>();
             LngLat position = new LngLat(-3.186874, 55.944494);
             int i = 0;
             MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
             for (Order order: orders) {
+                List<DroneMove> orderPath = new ArrayList<>();
                 if (order.getValidity(restaurants).equals("Valid")) {
                     List<LngLat> explored = new ArrayList<LngLat>();
                     Restaurant restaurant = getRestaurant(order, restaurants);
@@ -44,26 +45,43 @@ public class App {
                     while (!position.closeTo(goal)) {
                         float bestMove = findBestMove(position, goal, noFlyZone, explored);
                         LngLat newPosition = position.nextPosition(bestMove);
-                        flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
+                        orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1));
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
                         explored.add(position);
                         position = newPosition;
                     }
-                    flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1);
+                    orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1));
                     goal = new LngLat(-3.186874, 55.944494);
                     explored = new ArrayList<LngLat>();
                     while (!position.closeTo(goal)) {
                         //System.out.println(position);
                         float bestMove = findBestMove(position, goal, noFlyZone, explored);
                         LngLat newPosition = position.nextPosition(bestMove);
-                        flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1);
+                        orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), bestMove, newPosition.longitude(), newPosition.latitude(), i + 1));
                         i++;
                         coordinates.add(Point.fromLngLat(position.longitude(), position.latitude()));
                         explored.add(position);
                         position = newPosition;
                     }
-                    flightpath[i] = new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1);
+                    orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1));
+                    if (orderPath.size() + flightpath.size() <= 2000){
+                        for (DroneMove move: orderPath){
+                            flightpath.add(move);
+                        }
+                        for (Delivery delivery: deliveries){
+                            if (delivery.orderNo == order.orderNo){
+                                delivery.outcome = OrderOutcome.Delivered.toString();
+                            }
+                        }
+                    }
+                    else {
+                        for (Delivery delivery: deliveries){
+                            if (delivery.orderNo == order.orderNo){
+                                delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
+                            }
+                        }
+                    }
                 }
             }
             LineString lineString = LineString.fromLngLats(coordinates);
@@ -103,7 +121,7 @@ public class App {
         }
     }
 
-    public static void writeFlightPath(DroneMove[] flightpath, String date){
+    public static void writeFlightPath(List<DroneMove> flightpath, String date){
         try{
             ObjectMapper mapper = new ObjectMapper();
             mapper.writeValue(Paths.get("resultfiles/flightpath-" + date + ".json").toFile(), flightpath);

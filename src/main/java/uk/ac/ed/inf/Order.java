@@ -84,6 +84,18 @@ public class Order {
         }
     }
 
+    public static Order[] getOrdersNoDate(String baseUrl){
+        try{
+            URL url = new URL(baseUrl + "orders/");
+            Order[] orders = new ObjectMapper().readValue(url, Order[].class);
+            return orders;
+        }
+        catch (IOException e){
+            e.printStackTrace();
+            return new Order[0];
+        }
+    }
+
     public boolean isCVVValid(){
         return cvv.matches("\\d{3}");
     }

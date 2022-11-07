@@ -26,7 +26,8 @@ public class App {
         }
         try {
             Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
-            Order[] orders = Order.getOrders(baseUrlStr, date);
+            //Order[] orders = Order.getOrders(baseUrlStr, date);
+            Order[] orders = Order.getOrdersNoDate(baseUrlStr);
             Delivery[] deliveries = getDeliveries(orders, restaurants);
             /** do this later
              writeDeliveries(date, deliveries);

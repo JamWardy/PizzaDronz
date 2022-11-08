@@ -13,10 +13,6 @@ import com.mapbox.geojson.*;
 import com.mapbox.turf.*;
 import java.util.*;
 
-/**
- * Hello world!
- *
- */
 public class App {
     public static void main(String[] args) {
         String date = args[0];
@@ -26,12 +22,9 @@ public class App {
         }
         try {
             Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
-            //Order[] orders = Order.getOrders(baseUrlStr, date);
-            Order[] orders = Order.getOrdersNoDate(baseUrlStr);
+            Order[] orders = Order.getOrders(baseUrlStr, date);
+            //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
             Delivery[] deliveries = getDeliveries(orders, restaurants);
-            /** do this later
-             writeDeliveries(date, deliveries);
-             */
             List<DroneMove> flightpath = new ArrayList<>();
             List<Point> coordinates = new ArrayList<Point>();
             LngLat position = new LngLat(-3.186874, 55.944494);
@@ -67,18 +60,16 @@ public class App {
                     }
                     orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), i + 1));
                     if (orderPath.size() + flightpath.size() <= 2000){
-                        for (DroneMove move: orderPath){
-                            flightpath.add(move);
-                        }
+                        flightpath.addAll(orderPath);
                         for (Delivery delivery: deliveries){
-                            if (delivery.orderNo == order.orderNo){
+                            if (delivery.orderNo.equals(order.orderNo)){
                                 delivery.outcome = OrderOutcome.Delivered.toString();
                             }
                         }
                     }
                     else {
                         for (Delivery delivery: deliveries){
-                            if (delivery.orderNo == order.orderNo){
+                            if (delivery.orderNo.equals(order.orderNo)){
                                 delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
                             }
                         }
@@ -170,26 +161,7 @@ public class App {
                 }
             }
             if (!visited) {
-                boolean intersects = false;
-                for (List<List<Point>> polygon: noFlyZone.coordinates()){
-                    for (int j = 0; j < polygon.get(0).size()-1; j++){
-                        List<Point> border = new ArrayList<Point>();
-                        border.add(polygon.get(0).get(j));
-                        border.add(polygon.get(0).get(j+1));
-                        LineString borderline = LineString.fromLngLats(border);
-                        List<Point> path = new ArrayList<Point>();
-                        path.add(Point.fromLngLat(position.longitude(), position.latitude()));
-                        path.add(Point.fromLngLat(position.nextPosition(i).longitude(), position.nextPosition(i).latitude()));
-                        LineString pathline = LineString.fromLngLats(path);
-                        if (linesIntersect(borderline, pathline)){
-                            intersects = true;
-                            break;
-                        }
-                    }
-                    if (intersects){
-                        break;
-                    }
-                }
+                boolean intersects = intersectsNoFlyZone(noFlyZone, position, i);
                 if (!intersects) {
                     if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
                         bestMove = i;
@@ -199,6 +171,30 @@ public class App {
             }
         }
         return bestMove;
+    }
+
+    public static boolean intersectsNoFlyZone(MultiPolygon noFlyZone, LngLat position, float i){
+        boolean intersects = false;
+        for (List<List<Point>> polygon: noFlyZone.coordinates()){
+            for (int j = 0; j < polygon.get(0).size()-1; j++){
+                List<Point> border = new ArrayList<Point>();
+                border.add(polygon.get(0).get(j));
+                border.add(polygon.get(0).get(j+1));
+                LineString borderline = LineString.fromLngLats(border);
+                List<Point> path = new ArrayList<Point>();
+                path.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                path.add(Point.fromLngLat(position.nextPosition(i).longitude(), position.nextPosition(i).latitude()));
+                LineString pathline = LineString.fromLngLats(path);
+                if (linesIntersect(borderline, pathline)){
+                    intersects = true;
+                    break;
+                }
+            }
+            if (intersects){
+                break;
+            }
+        }
+        return intersects;
     }
 
     public static Restaurant getRestaurant(Order order, Restaurant[] restaurants){

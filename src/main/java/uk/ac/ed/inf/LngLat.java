@@ -113,4 +113,77 @@ public record LngLat(double longitude, double latitude){
             return null;
         }
     }
+
+    public static boolean intersectsNoFlyZone(MultiPolygon noFlyZone, LngLat position, float i){
+        boolean intersects = false;
+        for (List<List<Point>> polygon: noFlyZone.coordinates()){
+            for (int j = 0; j < polygon.get(0).size()-1; j++){
+                List<Point> border = new ArrayList<Point>();
+                border.add(polygon.get(0).get(j));
+                border.add(polygon.get(0).get(j+1));
+                LineString borderline = LineString.fromLngLats(border);
+                List<Point> path = new ArrayList<>();
+                path.add(Point.fromLngLat(position.longitude(), position.latitude()));
+                path.add(Point.fromLngLat(position.nextPosition(i).longitude(), position.nextPosition(i).latitude()));
+                LineString pathline = LineString.fromLngLats(path);
+                if (linesIntersect(borderline, pathline)){
+                    intersects = true;
+                    break;
+                }
+            }
+            if (intersects){
+                break;
+            }
+        }
+        return intersects;
+    }
+
+    public static boolean linesIntersect(LineString line1, LineString line2){
+        double latstart1 = line1.coordinates().get(0).latitude(); //x1
+        double latend1 = line1.coordinates().get(1).latitude(); //x2
+        double longstart1 = line1.coordinates().get(0).longitude(); //y1
+        double longend1 = line1.coordinates().get(1).longitude(); //y2
+        double latstart2 = line2.coordinates().get(0).latitude(); //x3
+        double latend2 = line2.coordinates().get(1).latitude(); //x4
+        double longstart2 = line2.coordinates().get(0).longitude(); //y3
+        double longend2 = line2.coordinates().get(1).longitude(); //y4
+
+        // (x1-x2) * (y3-y4) - (y1 - y2) * (x3 - x4)
+        double denominator = ((latstart1 - latend1) * (longstart2 - longend2)) - ((longstart1 - longend1) * (latstart2 - latend2));
+        if (denominator == 0){
+            return false;
+        }
+
+        //(x1-x3)(y3-y4) - (y1-y3)(x3-x4)
+        double t = ((latstart1 - latstart2) * (longstart2 - longend2) - (longstart1 - longstart2) * (latstart2 - latend2)) / denominator;
+
+        // (x1-x3)(y1-y2) - (y1-y3)(x1-x2)
+        double u = ((latstart1 - latstart2) * (longstart1 - longend1) - (longstart1 - longstart2) * (latstart1 - latend1)) / denominator;
+
+        return ((t > 0 && t < 1) && (u > 0 && u < 1));
+    }
+
+    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored){
+        float bestMove = -1;
+        double bestDistance = 1000;
+        for (float i = 0; i < 360; i += 22.5){
+            boolean visited = false;
+            for (LngLat point: explored){
+                if (position.nextPosition(i).closeTo(point)){
+                    visited = true;
+                    break;
+                }
+            }
+            if (!visited) {
+                boolean intersects = intersectsNoFlyZone(noFlyZone, position, i);
+                if (!intersects) {
+                    if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
+                        bestMove = i;
+                        bestDistance = position.nextPosition(i).distanceTo(goal);
+                    }
+                }
+            }
+        }
+        return bestMove;
+    }
 }

@@ -117,7 +117,7 @@ public class AppTest
         list2.add(Point.fromLngLat(c.longitude(), c.latitude()));
         list2.add(Point.fromLngLat(d.longitude(), d.latitude()));
         LineString line2 = LineString.fromLngLats(list2);
-        assertTrue(App.linesIntersect(line1, line2));
+        assertTrue(LngLat.linesIntersect(line1, line2));
     }
 
 }

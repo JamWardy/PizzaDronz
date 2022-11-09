@@ -9,4 +9,12 @@ public class Delivery {
         this.outcome = outcome;
         this.costInPence = costInPence;
     }
+
+    public static Delivery[] getDeliveries(Order[] orders, Restaurant[] restaurants){
+        Delivery[] deliveries = new Delivery[orders.length];
+        for (int i = 0; i < orders.length; i++) {
+            deliveries[i] = new Delivery(orders[i].orderNo, orders[i].getValidity(restaurants), orders[i].priceTotalInPence);
+        }
+        return deliveries;
+    }
 }

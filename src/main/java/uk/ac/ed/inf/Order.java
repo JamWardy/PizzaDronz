@@ -182,4 +182,15 @@ public class Order {
             return "Valid";
         }
     }
+
+    public static Restaurant getRestaurant(Order order, Restaurant[] restaurants){
+        for (Restaurant restaurant: restaurants){
+            for (Menu item: restaurant.getMenu()){
+                if (item.name.equals(order.orderItems[0])){
+                    return restaurant;
+                }
+            }
+        }
+        return null;
+    }
 }

@@ -17,4 +17,22 @@ public class Delivery {
         }
         return deliveries;
     }
+
+    public static Delivery[] setDelivered(Delivery[] deliveries, Order order){
+        for (Delivery delivery: deliveries){
+            if (delivery.orderNo.equals(order.orderNo)){
+                delivery.outcome = OrderOutcome.Delivered.toString();
+            }
+        }
+        return deliveries;
+    }
+
+    public static Delivery[] setValidNotDelivered(Delivery[] deliveries, Order order){
+        for (Delivery delivery: deliveries){
+            if (delivery.orderNo.equals(order.orderNo)){
+                delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
+            }
+        }
+        return deliveries;
+    }
 }

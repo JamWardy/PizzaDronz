@@ -9,6 +9,11 @@ import com.mapbox.geojson.*;
 import java.util.*;
 
 public class App {
+
+    /**
+     * Invokes the program
+     * @param args date (the date for which the orders are processed) baseUrlString (the URL base to which REST-requests are made).
+     */
     public static void main(String[] args) {
         String date = args[0];
         String baseUrlStr = args[1];
@@ -60,9 +65,17 @@ public class App {
         }
     }
 
-    public static void writeCombined(LineString lineString, MultiPolygon noFlyZone, String baseUrlStr, String date){
+    /**
+     * Writes to a geoJson file which contains the drone flightpath as well as the No-Fly Zones and the central area,
+     * at 'resultfiles/combined-date.geojson'.
+     * @param flightpath    The flight path of the drone as a LineString.
+     * @param noFlyZone     The No-Fly Zone as a Mapbox MultiPolygon.
+     * @param baseUrlStr    The base URL from which the central area's co-ordinates are requested.
+     * @param date          The date for which the flight path is generated
+     */
+    public static void writeCombined(LineString flightpath, MultiPolygon noFlyZone, String baseUrlStr, String date){
         try {
-            Feature path = Feature.fromGeometry(lineString);
+            Feature path = Feature.fromGeometry(flightpath);
             Feature noflypolygon = Feature.fromGeometry(noFlyZone);
             List<Feature> features = new ArrayList<>();
             features.add(path);

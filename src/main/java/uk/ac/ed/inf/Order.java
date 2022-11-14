@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.time.*;
 
 /**
- * Class which contains the getDeliveryCost() method
+ * Class that represents the order information for an order made
  */
 public class Order {
     public String orderNo;
@@ -72,6 +72,12 @@ public class Order {
         throw new InvalidPizzaCombinationException("Invalid Pizza Combination");
     }
 
+    /**
+     * Gets the json of orders from the REST server at 'baseUrl/orders/date' and returns this as an array of Order objects.
+     * @param baseUrl   The base URL to which the request is made.
+     * @param date      The date of the orders which are being requested.
+     * @return          An array of Order objects, which is all the orders made on the corresponding day.
+     */
     public static Order[] getOrders(String baseUrl, String date){
         try{
             URL url = new URL(baseUrl + "orders/" + date);
@@ -96,14 +102,27 @@ public class Order {
         }
     }
 
+    /**
+     * Checks whether the CVV is in the valid format of 3 digits.
+     * @return Boolean for whether the CVV is valid.
+     */
     public boolean isCVVValid(){
         return cvv.matches("\\d{3}");
     }
 
+    /**
+     * Checks whether the card number is in the valid format of 16 digits.
+     * @return  Boolean for whether the card number is valid.
+     */
     public boolean isCardNumberValid(){
         return creditCardNumber.matches("\\d{16}");
     }
 
+    /**
+     * Checks whether the card expiry date is after the date of the order.
+     * @param date  The card's expiry date in MM/yy format.
+     * @return  Boolean for whether the card expiry date is valid.
+     */
     public boolean isCardExpiryValid(String date){
         try {
             LocalDate expiryDate = YearMonth.parse(creditCardExpiry, DateTimeFormatter.ofPattern("MM/yy")).atEndOfMonth();
@@ -114,6 +133,12 @@ public class Order {
         }
     }
 
+    /**
+     * Checks whether a specific pizza exists on any of the restaurant's menus.
+     * @param pizza         The name of pizza being checked.
+     * @param restaurants   Array of restaurants items can be ordered from.
+     * @return  Boolean for whether the pizza exists.
+     */
     public boolean isPizzaValid(String pizza, Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
             for (Menu menu: restaurant.getMenu()){
@@ -125,6 +150,11 @@ public class Order {
         return false;
     }
 
+    /**
+     * Checks whether all the pizzas ordered in the order exist.
+     * @param restaurants   List of restaurants pizzas can be ordered from.
+     * @return  Boolean for whether all the pizzas exist.
+     */
     public boolean pizzasDefined(Restaurant[] restaurants){
         for (String pizza: orderItems){
             if (!isPizzaValid(pizza, restaurants)){

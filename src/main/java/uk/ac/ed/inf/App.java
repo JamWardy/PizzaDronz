@@ -53,9 +53,7 @@ public class App {
                 coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
             }
             coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size()-1).fromLongitude, flightpath.get(flightpath.size()-1).fromLatitude));
-            LineString lineString = LineString.fromLngLats(coordinates);
-            String json = FeatureCollection.fromFeature(Feature.fromGeometry(lineString)).toJson();
-            writeGeojson(json, date);
+            writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
             writeDeliveries(date, deliveries);
             writeFlightPath(flightpath, date);
             //writeCombined(lineString, noFlyZone, baseUrlStr, date);
@@ -98,6 +96,15 @@ public class App {
         }
     }
 
+    /**
+     * Generates the list of drone moves for part of the drone's flightpath from the starting position to the goal.
+     * @param position  Starting point of the drone as a LngLat point.
+     * @param goal      Finishing point of the drone's flightpath as a LngLat point.
+     * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through, as a Mapbox Multipolygon object.
+     * @param order     The order which the drone is attempting to deliver.
+     * @param i         The number of ticks elapsed when the drone starts this part of the flightpath.
+     * @return          A list of drone moves generated for this part of the flightpath.
+     */
     public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, int i){
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
@@ -112,7 +119,11 @@ public class App {
         return orderPath;
     }
 
-
+    /**
+     * Writes the flightpath in terms of moves of the drone to the 'resultfiles/flightpath-date.json' file.
+     * @param flightpath    The flightpath which will be written in the file.
+     * @param date          The date of the orders for that flightpath, will be used as the file's name.
+     */
     public static void writeFlightPath(List<DroneMove> flightpath, String date){
         try{
             ObjectMapper mapper = new ObjectMapper();
@@ -122,6 +133,11 @@ public class App {
         }
     }
 
+    /**
+     * Writes the flightpath of the drone in terms of coordinates in geojson format to the 'resultfiles/flightpath-date.geojson' file.
+     * @param json  The flightpath of the drone in geojson format, as a string.
+     * @param date  The date of the orders of this flightpath.
+     */
     public static void writeGeojson(String json, String date){
         try{
             FileWriter filewriter = new FileWriter("resultfiles/drone-" + date + ".geojson");
@@ -132,6 +148,11 @@ public class App {
         }
     }
 
+    /**
+     * Writes all the deliveries and non-deliveries of a given day, along with the outcome to the 'resultfiles/deliveries-date.json' file.
+     * @param date          The date of all the orders of this file.
+     * @param deliveries    An array of all the deliveries and non-deliveries attempted that day, along with their outcome.
+     */
     public static void writeDeliveries(String date, Delivery[] deliveries){
         try{
             ObjectMapper mapper = new ObjectMapper();

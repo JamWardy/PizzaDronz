@@ -9,9 +9,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import com.mapbox.geojson.*;
+
+import java.time.Clock;
 import java.util.*;
 
 public class App {
+    int startTicks;
 
     /**
      * Invokes the program
@@ -31,23 +34,34 @@ public class App {
                 try {
                     Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
                     Order[] orders = Order.getOrders(baseUrlStr, date);
+                    //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
                     if (orders.length > 0) {
-                        //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
                         Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
                         List<DroneMove> flightpath = new ArrayList<>();
                         LngLat position = new LngLat(-3.186874, 55.944494);
-                        int i = 0;
                         MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
-                        for (Order order : orders) {
+                        ArrayList<String[]> validOrders = new ArrayList<>();
+                        for (Order order: orders){
+                            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
+                            String[] orderInfo = {order.orderNo, Double.toString(dist)};
+                            validOrders.add(orderInfo);
+                        }
+                        validOrders.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
+                        long startTicks = System.currentTimeMillis();
+                        Order order = orders[0];
+                        for (String[] orderitem : validOrders) {
+                            for (Order temporder: orders){
+                                if (temporder.orderNo.equals(orderitem[0])){
+                                    order = temporder;
+                                }
+                            }
                             List<DroneMove> orderPath = new ArrayList<>();
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);
-                                orderPath.addAll(orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, i));
+                                orderPath.addAll(orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks));
                                 position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-                                i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
-                                orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, i));
+                                orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks));
                                 position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-                                i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
                                 if (orderPath.size() + flightpath.size() <= 2000) {
                                     flightpath.addAll(orderPath);
                                     deliveries = Delivery.setDelivered(deliveries, order);
@@ -56,6 +70,7 @@ public class App {
                                 }
                             }
                         }
+                        System.out.println(System.currentTimeMillis() - startTicks);
                         List<Point> coordinates = new ArrayList<>();
                         for (DroneMove move : flightpath) {
                             coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
@@ -136,20 +151,20 @@ public class App {
      * @param goal      Finishing point of the drone's flightpath as a LngLat point.
      * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through, as a Mapbox Multipolygon object.
      * @param order     The order which the drone is attempting to deliver.
-     * @param i         The number of ticks elapsed when the drone starts this part of the flightpath.
+     * @param startTicks         The initial number of ticks of the first calculation.
      * @return          A list of drone moves generated for this part of the flightpath.
      */
-    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, int i){
+    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks){
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
         while (!position.closeTo(goal)) {
             float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored);
             LngLat newPosition = position.nextPosition(bestMove);
-            orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), ++i ));
+            orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             explored.add(position);
             position = newPosition;
         }
-        orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), ++i));
+        orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
     }
 

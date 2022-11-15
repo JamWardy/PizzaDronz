@@ -10,9 +10,9 @@ public class DroneMove {
     public String angle = "null";
     public double toLongitude;
     public double toLatitude;
-    public int ticksSinceStartOfCalculation;
+    public long ticksSinceStartOfCalculation;
 
-    public DroneMove(String orderNo, double fromLongitude, double fromLatitude, String angle, double toLongitude, double toLatitude, int ticksSinceStartOfCalculation) {
+    public DroneMove(String orderNo, double fromLongitude, double fromLatitude, String angle, double toLongitude, double toLatitude, long ticksSinceStartOfCalculation) {
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;
         this.fromLatitude = fromLatitude;
@@ -22,7 +22,7 @@ public class DroneMove {
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
-    public DroneMove(String orderNo, double fromLongitude, double fromLatitude, double toLongitude, double toLatitude, int ticksSinceStartOfCalculation) {
+    public DroneMove(String orderNo, double fromLongitude, double fromLatitude, double toLongitude, double toLatitude, long ticksSinceStartOfCalculation) {
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;
         this.fromLatitude = fromLatitude;

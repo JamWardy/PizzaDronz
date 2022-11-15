@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+/**
+ * Class which represents the
+ */
 public class Delivery {
     public String orderNo;
     public String outcome;

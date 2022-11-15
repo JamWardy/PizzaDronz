@@ -164,10 +164,19 @@ public class Order {
         return true;
     }
 
+    /**
+     * Checks whether the number of pizzas ordered is valid, that is between 1 and 4.
+     * @return  Boolean for if the number of pizzas ordered is valid.
+     */
     public boolean validPizzaCount(){
         return (orderItems.length >= 1 && orderItems.length <= 4);
     }
 
+    /**
+     * Checks if all the pizzas ordered come from the same supplier.
+     * @param restaurants   Array of restaurants that pizzas can be ordered from.
+     * @return  Boolean for whether the pizzas all come from the same supplier.
+     */
     public boolean sameSuppliers(Restaurant[] restaurants){
         try {
             Order.getDeliveryCost(restaurants, orderItems);
@@ -177,6 +186,11 @@ public class Order {
         }
     }
 
+    /**
+     * Checks if the order total cost is the same as the expected order total cost for those items.
+     * @param restaurants   Array of restaurants pizzas can be ordered from, as Restaurant objects.
+     * @return  Whether the order total cost matches the expected total order cost.
+     */
     public boolean correctTotal(Restaurant[] restaurants){
         try{
             return (Order.getDeliveryCost(restaurants, orderItems) == priceTotalInPence);
@@ -186,6 +200,11 @@ public class Order {
         }
     }
 
+    /**
+     * Returns the order outcome of an order.
+     * @param restaurants   An array of restaurants that pizzas can be ordered from, each as a Restaurant object.
+     * @return  The corresponding OrderOutcome Enum as a string if the order is not valid, or the String "valid" if it is.
+     */
     public String getValidity(Restaurant[] restaurants){
         if (!isCardNumberValid()){
             return OrderOutcome.InvalidCardNumber.toString();
@@ -213,10 +232,15 @@ public class Order {
         }
     }
 
-    public static Restaurant getRestaurant(Order order, Restaurant[] restaurants){
+    /**
+     * Gets the restaurant from which this order's pizzas have been ordered from (assuming the order is valid)
+     * @param restaurants   An array of restaurants pizzas can be ordered from, each as Restaurant objects.
+     * @return  The restaurant from which the pizzas have been ordered.
+     */
+    public Restaurant getRestaurant(Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
             for (Menu item: restaurant.getMenu()){
-                if (item.name.equals(order.orderItems[0])){
+                if (item.name.equals(this.orderItems[0])){
                     return restaurant;
                 }
             }

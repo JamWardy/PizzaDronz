@@ -1,8 +1,11 @@
 package uk.ac.ed.inf;
 
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
 import com.mapbox.geojson.*;
@@ -15,53 +18,84 @@ public class App {
      * @param args date (the date for which the orders are processed) baseUrlString (the URL base to which REST-requests are made).
      */
     public static void main(String[] args) {
-        String date = args[0];
-        String baseUrlStr = args[1];
-        if (!baseUrlStr.endsWith("/")) {
-            baseUrlStr += "/";
+        if (args.length < 2){
+            System.err.println("Invalid arguments, please input date and then url");
         }
-        try {
-            Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
-            Order[] orders = Order.getOrders(baseUrlStr, date);
-            //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
-            Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
-            List<DroneMove> flightpath = new ArrayList<>();
-            LngLat position = new LngLat(-3.186874, 55.944494);
-            int i = 0;
-            MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
-            for (Order order: orders) {
-                List<DroneMove> orderPath = new ArrayList<>();
-                if (order.getValidity(restaurants).equals("Valid")) {
-                    Restaurant restaurant = Order.getRestaurant(order, restaurants);
-                    orderPath.addAll(orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, i));
-                    position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-                    i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
-                    orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, i));
-                    position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-                    i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
-                    if (orderPath.size() + flightpath.size() <= 2000){
-                        flightpath.addAll(orderPath);
-                        deliveries = Delivery.setDelivered(deliveries, order);
+        else {
+            String date = args[0];
+            String baseUrlStr = args[1];
+            if (!baseUrlStr.endsWith("/")) {
+                baseUrlStr += "/";
+            }
+            if (checkURLS(baseUrlStr, date)) {
+                try {
+                    Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
+                    Order[] orders = Order.getOrders(baseUrlStr, date);
+                    if (orders.length > 0) {
+                        //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
+                        Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
+                        List<DroneMove> flightpath = new ArrayList<>();
+                        LngLat position = new LngLat(-3.186874, 55.944494);
+                        int i = 0;
+                        MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
+                        for (Order order : orders) {
+                            List<DroneMove> orderPath = new ArrayList<>();
+                            if (order.getValidity(restaurants).equals("Valid")) {
+                                Restaurant restaurant = order.getRestaurant(restaurants);
+                                orderPath.addAll(orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, i));
+                                position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
+                                i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
+                                orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, i));
+                                position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
+                                i = orderPath.get(orderPath.size() - 1).ticksSinceStartOfCalculation;
+                                if (orderPath.size() + flightpath.size() <= 2000) {
+                                    flightpath.addAll(orderPath);
+                                    deliveries = Delivery.setDelivered(deliveries, order);
+                                } else {
+                                    deliveries = Delivery.setValidNotDelivered(deliveries, order);
+                                }
+                            }
+                        }
+                        List<Point> coordinates = new ArrayList<>();
+                        for (DroneMove move : flightpath) {
+                            coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
+                        }
+                        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).fromLongitude, flightpath.get(flightpath.size() - 1).fromLatitude));
+                        writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
+                        writeDeliveries(date, deliveries);
+                        writeFlightPath(flightpath, date);
+                        //writeCombined(lineString, noFlyZone, baseUrlStr, date);
                     }
-                    else {
-                        deliveries = Delivery.setValidNotDelivered(deliveries, order);
-                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            List<Point> coordinates = new ArrayList<>();
-            for (DroneMove move: flightpath){
-                coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
-            }
-            coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size()-1).fromLongitude, flightpath.get(flightpath.size()-1).fromLatitude));
-            writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
-            writeDeliveries(date, deliveries);
-            writeFlightPath(flightpath, date);
-            //writeCombined(lineString, noFlyZone, baseUrlStr, date);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
         }
     }
+
+    public static boolean checkURLS(String baseUrlStr, String date){
+        boolean ok = false;
+        try{
+            URL baseUrl = new URL(baseUrlStr);
+            URL orderUrl = new URL(baseUrl + "orders/" + date);
+            URL centralAreaURL = new URL(baseUrl + "centralArea/");
+            URL noFlyUrl = new URL(baseUrl + "noFlyZones/");
+            URL restaurantsUrl = new URL(baseUrl + "restaurants/");
+            new ObjectMapper().readValue(orderUrl, Order[].class);
+            new ObjectMapper().readValue(centralAreaURL, LngLat[].class);
+            new ObjectMapper().readValue(noFlyUrl, NoFlyZone[].class);
+            new ObjectMapper().readValue(restaurantsUrl, Restaurant[].class);
+            ok = true;
+        }
+        catch (MalformedURLException e){
+            System.err.println("Malformed URL, please check URL protocol");
+        }
+        catch(IOException e){
+            System.err.println("I/O Exception, please check connection and input data");
+        }
+        return ok;
+    }
+
 
     /**
      * Writes to a geoJson file which contains the drone flightpath as well as the No-Fly Zones and the central area,

@@ -93,7 +93,12 @@ public record LngLat(double longitude, double latitude){
         }
     }
 
-    public static MultiPolygon getNoFlyZone(String baseUrlStr, String date){
+    /**
+     * Retrives the No-Fly Zone from the REST server.
+     * @param baseUrlStr    The base of the URL from which the No-Fly Zone is retrieved.
+     * @return  A MultiPolygon object of the No-Fly Zone.
+     */
+    public static MultiPolygon getNoFlyZone(String baseUrlStr){
         try{
             URL noflyurl = new URL(baseUrlStr + "noFlyZones");
             NoFlyZone[] noFlyZone = new ObjectMapper().readValue(noflyurl, NoFlyZone[].class);
@@ -114,6 +119,13 @@ public record LngLat(double longitude, double latitude){
         }
     }
 
+    /**
+     * Checks if a drone move intersects the No-Fly zone.
+     * @param noFlyZone The No-Fly Zone of the area, as a mapbox MultiPolygon object.
+     * @param position  The current position of the drone, as a LngLat object.
+     * @param i         The angle of the drone move.
+     * @return          A boolean for whether the drone move intersects the No-Fly Zone.
+     */
     public static boolean intersectsNoFlyZone(MultiPolygon noFlyZone, LngLat position, float i){
         boolean intersects = false;
         for (List<List<Point>> polygon: noFlyZone.coordinates()){
@@ -138,6 +150,14 @@ public record LngLat(double longitude, double latitude){
         return intersects;
     }
 
+    /**
+     * Check if two line segments intersect. Algorithm based on solution to the line-line intersection problem found at
+     * https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line_segment
+     * which solves the problem in terms of Bezier parameters, t and u.
+     * @param line1 First line, a LineString.
+     * @param line2 Second line, a LineString.
+     * @return  A boolean for whether the two lines segments intersect eachother.
+     */
     public static boolean linesIntersect(LineString line1, LineString line2){
         double latstart1 = line1.coordinates().get(0).latitude(); //x1
         double latend1 = line1.coordinates().get(1).latitude(); //x2
@@ -163,6 +183,14 @@ public record LngLat(double longitude, double latitude){
         return ((t > 0 && t < 1) && (u > 0 && u < 1));
     }
 
+    /**
+     * Finds the best legal unexplored drone move at a given position, trying to get to a given goal.
+     * @param position  Current position of the drone, as a LngLat.
+     * @param goal      Goal the drone is trying to get to, as a LngLat.
+     * @param noFlyZone No-Fly zones that can't be flown through, as a mapbox MultiPolygon object.
+     * @param explored  List of LngLat points already explored by the drone on the path to the goal.
+     * @return  A float for the best move.
+     */
     public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored){
         float bestMove = -1;
         double bestDistance = 1000;

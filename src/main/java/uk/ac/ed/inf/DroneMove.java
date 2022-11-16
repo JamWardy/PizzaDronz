@@ -2,6 +2,9 @@ package uk.ac.ed.inf;
 
 import javax.annotation.Nullable;
 
+/**
+ * Represents a drone move, in the format specified in the flightpath json file.
+ */
 @Nullable
 public class DroneMove {
     public String orderNo;
@@ -12,6 +15,16 @@ public class DroneMove {
     public double toLatitude;
     public long ticksSinceStartOfCalculation;
 
+    /**
+     * Constructor with a non-null move angle.
+     * @param orderNo   Number of the order being delivered, as a String.
+     * @param fromLongitude Longitude of the drone before the move.
+     * @param fromLatitude  Latitude of the drone before the move.
+     * @param angle Angle of the drone move.
+     * @param toLongitude   Longitude of the drone after the move.
+     * @param toLatitude    Latitude of the drone after the move.
+     * @param ticksSinceStartOfCalculation  Number of milliseconds elapsed since the first drone move was calculated.
+     */
     public DroneMove(String orderNo, double fromLongitude, double fromLatitude, String angle, double toLongitude, double toLatitude, long ticksSinceStartOfCalculation) {
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;
@@ -22,6 +35,15 @@ public class DroneMove {
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
+    /**
+     * Constructor with a null move angle, for hovering.
+     * @param orderNo   Number of the order being delivered, as a String.
+     * @param fromLongitude Longitude of the drone before the move.
+     * @param fromLatitude  Latitude of the drone before the move.
+     * @param toLongitude   Longitude of the drone after the move.
+     * @param toLatitude    Latitude of the drone after the move.
+     * @param ticksSinceStartOfCalculation  Number of milliseconds elapsed since the first drone move was calculated.
+     */
     public DroneMove(String orderNo, double fromLongitude, double fromLatitude, double toLongitude, double toLatitude, long ticksSinceStartOfCalculation) {
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;

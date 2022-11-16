@@ -39,7 +39,7 @@ public class App {
                         Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
                         List<DroneMove> flightpath = new ArrayList<>();
                         LngLat position = new LngLat(-3.186874, 55.944494);
-                        MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr, date);
+                        MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr);
                         ArrayList<String[]> validOrders = new ArrayList<>();
                         for (Order order: orders){
                             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
@@ -70,7 +70,6 @@ public class App {
                                 }
                             }
                         }
-                        System.out.println(System.currentTimeMillis() - startTicks);
                         List<Point> coordinates = new ArrayList<>();
                         for (DroneMove move : flightpath) {
                             coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));

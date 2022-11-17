@@ -1,11 +1,9 @@
 package uk.ac.ed.inf;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mapbox.geojson.*;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.Math;
 import java.net.MalformedURLException;

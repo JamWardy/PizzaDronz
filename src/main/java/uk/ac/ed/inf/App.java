@@ -1,7 +1,5 @@
 package uk.ac.ed.inf;
 
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,11 +8,9 @@ import java.net.URL;
 import java.nio.file.Paths;
 import com.mapbox.geojson.*;
 
-import java.time.Clock;
 import java.util.*;
 
 public class App {
-    int startTicks;
 
     /**
      * Invokes the program

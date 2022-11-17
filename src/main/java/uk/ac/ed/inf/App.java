@@ -21,33 +21,48 @@ public class App {
      * @param args date (the date for which the orders are processed) baseUrlString (the URL base to which REST-requests are made).
      */
     public static void main(String[] args) {
+        // check if enough command-line arguments have been entered
         if (args.length < 2) {
             System.err.println("Invalid arguments, please input date and then url");
         } else {
+            // parse command-line arguments
             String date = args[0];
             String baseUrlStr = args[1];
+            // ensure correct url format
             if (!baseUrlStr.endsWith("/")) {
                 baseUrlStr += "/";
             }
+            // check if all urls needed exist and are correct
             if (checkURLS(baseUrlStr, date)) {
                 try {
+                    // get all the restaurants and orders from REST server
                     Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
                     Order[] orders = Order.getOrders(baseUrlStr, date);
+                    // only make flightpath if there are orders, this prevents errors
                     if (orders.length > 0) {
                         Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
                         List<DroneMove> flightpath = new ArrayList<>();
+                        // drone starts at Appleton Tower
                         LngLat position = new LngLat(-3.186874, 55.944494);
                         MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr);
-                        ArrayList<String[]> validOrders = Order.sortOrderNos(orders, restaurants, position);
+                        // sort order numbers based off proximity to the restaurant
+                        ArrayList<String[]> sortedOrders = Order.sortOrderNos(orders, restaurants, position);
+                        // time the start of move calculation
                         long startTicks = System.currentTimeMillis();
-                        for (String[] orderitem : validOrders) {
-                            Order order = Order.getOrderFromItem(orderitem, orders);
+                        // for all orders on the day
+                        for (String[] orderInfo : sortedOrders) {
+                            // get order from its order number
+                            Order order = Order.getOrderFromItem(orderInfo[0], orders);
+                            // if order is valid
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);
+                                // construct the path to and from the restaurant
                                 List<DroneMove> orderPath = makeOrderPath(position, order, restaurant, noFlyZone, startTicks);
+                                // if the flightpath would exceed 2000 moves, add the constructed path to the total flightpath and set the order to delivered
                                 if (orderPath.size() + flightpath.size() <= 2000) {
                                     flightpath.addAll(orderPath);
                                     Delivery.setDelivered(deliveries, order);
+                                // otherwise set startus to ValidButNotDelivered
                                 } else {
                                     Delivery.setValidNotDelivered(deliveries, order);
                                 }
@@ -62,6 +77,12 @@ public class App {
         }
     }
 
+    /**
+     * Creates the 3 required files; deliveries.json, drone.geojson, flightpath.json
+     * @param date  Date all the pizzas have been ordered on.
+     * @param deliveries    The delivery information for each of the pizzas.
+     * @param flightpath    The flightpath the drone took.
+     */
     public static void writeFiles(String date, Delivery[] deliveries, List<DroneMove> flightpath){
         List<Point> coordinates = makePathCoordinates(flightpath);
         writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
@@ -69,6 +90,12 @@ public class App {
         writeFlightPath(flightpath, date);
     }
 
+    /**
+     * Check that all the URLs that are required during the running of the program exist and are valid.
+     * @param baseUrlStr    The base of the URL through which the REST server is accessed.
+     * @param date  The date the pizzas have been ordered on.
+     * @return  A boolean for whether the URLs required are valid.
+     */
     public static boolean checkURLS(String baseUrlStr, String date){
         boolean ok = false;
         try{
@@ -96,10 +123,10 @@ public class App {
     /**
      * Writes to a geoJson file which contains the drone flightpath as well as the No-Fly Zones and the central area,
      * at 'resultfiles/combined-date.geojson'.
-     * @param flightpath    The flight path of the drone as a LineString.
-     * @param noFlyZone     The No-Fly Zone as a Mapbox MultiPolygon.
+     * @param flightpath    The flight path of the drone.
+     * @param noFlyZone     The No-Fly Zone the drone avoids.
      * @param baseUrlStr    The base URL from which the central area's co-ordinates are requested.
-     * @param date          The date for which the flight path is generated
+     * @param date          The date the flight path is generated for.
      */
     public static void writeCombined(LineString flightpath, MultiPolygon noFlyZone, String baseUrlStr, String date){
         try {
@@ -128,9 +155,9 @@ public class App {
 
     /**
      * Generates the list of drone moves for part of the drone's flightpath from the starting position to the goal.
-     * @param position  Starting point of the drone as a LngLat point.
-     * @param goal      Finishing point of the drone's flightpath as a LngLat point.
-     * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through, as a Mapbox Multipolygon object.
+     * @param position  Starting point of the drone.
+     * @param goal      Finishing point of the drone's flightpath.
+     * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through.
      * @param order     The order which the drone is attempting to deliver.
      * @param startTicks         The initial number of ticks of the first calculation.
      * @return          A list of drone moves generated for this part of the flightpath.
@@ -192,6 +219,11 @@ public class App {
         }
     }
 
+    /**
+     * Takes the json formatted flightpath and turns it into a List of points the drone moves through.
+     * @param flightpath    The full flightpath of the drone.
+     * @return  The list of points that the drone moves through.
+     */
     public static List<Point> makePathCoordinates(List<DroneMove> flightpath){
         List<Point> coordinates = new ArrayList<>();
         for (DroneMove move : flightpath) {
@@ -201,6 +233,15 @@ public class App {
         return coordinates;
     }
 
+    /**
+     * Makes the flightpath of the drone for one specific order, starting and finishing close to a specific point and going to a specific restaurant.
+     * @param position  Starting position of the drone.
+     * @param order The order the drone is delivering.
+     * @param restaurant    The restaurant the drone is delivering from.
+     * @param noFlyZone The No-Fly zone the drone avoids.
+     * @param startTicks    The number of ticks the flightpath calculation started at.
+     * @return
+     */
     public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks){
         List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks));
         position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);

@@ -249,21 +249,34 @@ public class Order {
         return null;
     }
 
+    /**
+     * Creates a list of pairs of order numbers and distances to a restaurant, sorted in ascending order by distance to the restaurant.
+     * @param orders    List of orders the drone is trying to deliver.
+     * @param restaurants   List of restaurants pizzas can be ordered from.
+     * @param position  Starting position of the drone.
+     * @return  A sorted list of pairs of order numbers and distances to a restaurant.
+     */
     public static ArrayList<String[]> sortOrderNos(Order[] orders, Restaurant[] restaurants, LngLat position){
-        ArrayList<String[]> validOrders = new ArrayList<>();
+        ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
             String[] orderInfo = {order.orderNo, Double.toString(dist)};
-            validOrders.add(orderInfo);
+            orderInfos.add(orderInfo);
         }
-        validOrders.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
-        return validOrders;
+        orderInfos.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
+        return orderInfos;
     }
 
-    public static Order getOrderFromItem(String[] orderitem, Order[] orders){
+    /**
+     * Gets the order object, from its order number. If order can't be found returns the first order in the list.
+     * @param orderNumber   The order number of the required order.
+     * @param orders    All the orders.
+     * @return  The order object corresponding to the order number.
+     */
+    public static Order getOrderFromItem(String orderNumber, Order[] orders){
         Order order = orders[0];
         for (Order temporder : orders) {
-            if (temporder.orderNo.equals(orderitem[0])) {
+            if (temporder.orderNo.equals(orderNumber)) {
                 order = temporder;
             }
         }

@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.time.*;
+import java.util.Comparator;
 
 /**
  * Class that represents the order information for an order made
@@ -246,5 +247,26 @@ public class Order {
             }
         }
         return null;
+    }
+
+    public static ArrayList<String[]> sortOrderNos(Order[] orders, Restaurant[] restaurants, LngLat position){
+        ArrayList<String[]> validOrders = new ArrayList<>();
+        for (Order order: orders){
+            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
+            String[] orderInfo = {order.orderNo, Double.toString(dist)};
+            validOrders.add(orderInfo);
+        }
+        validOrders.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
+        return validOrders;
+    }
+
+    public static Order getOrderFromItem(String[] orderitem, Order[] orders){
+        Order order = orders[0];
+        for (Order temporder : orders) {
+            if (temporder.orderNo.equals(orderitem[0])) {
+                order = temporder;
+            }
+        }
+        return order;
     }
 }

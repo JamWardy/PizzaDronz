@@ -40,13 +40,12 @@ public class Delivery {
      * @param order         The Order object for which the outcome needs to be changed.
      * @return  An array of Delivery objects, with the outcome changed.
      */
-    public static Delivery[] setDelivered(Delivery[] deliveries, Order order){
+    public static void setDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
             if (delivery.orderNo.equals(order.orderNo)){
                 delivery.outcome = OrderOutcome.Delivered.toString();
             }
         }
-        return deliveries;
     }
 
     /**
@@ -55,12 +54,11 @@ public class Delivery {
      * @param order         The Order object for which the outcome needs to be changed.
      * @return  An array of Delivery objects, with the outcome changed.
      */
-    public static Delivery[] setValidNotDelivered(Delivery[] deliveries, Order order){
+    public static void setValidNotDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
             if (delivery.orderNo.equals(order.orderNo)){
                 delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
             }
         }
-        return deliveries;
     }
 }

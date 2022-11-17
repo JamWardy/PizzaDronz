@@ -21,10 +21,9 @@ public class App {
      * @param args date (the date for which the orders are processed) baseUrlString (the URL base to which REST-requests are made).
      */
     public static void main(String[] args) {
-        if (args.length < 2){
+        if (args.length < 2) {
             System.err.println("Invalid arguments, please input date and then url");
-        }
-        else {
+        } else {
             String date = args[0];
             String baseUrlStr = args[1];
             if (!baseUrlStr.endsWith("/")) {
@@ -34,57 +33,40 @@ public class App {
                 try {
                     Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
                     Order[] orders = Order.getOrders(baseUrlStr, date);
-                    //Order[] orders = Order.getOrdersNoDate(baseUrlStr);
                     if (orders.length > 0) {
                         Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
                         List<DroneMove> flightpath = new ArrayList<>();
                         LngLat position = new LngLat(-3.186874, 55.944494);
                         MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr);
-                        ArrayList<String[]> validOrders = new ArrayList<>();
-                        for (Order order: orders){
-                            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
-                            String[] orderInfo = {order.orderNo, Double.toString(dist)};
-                            validOrders.add(orderInfo);
-                        }
-                        validOrders.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
+                        ArrayList<String[]> validOrders = Order.sortOrderNos(orders, restaurants, position);
                         long startTicks = System.currentTimeMillis();
-                        Order order = orders[0];
                         for (String[] orderitem : validOrders) {
-                            for (Order temporder: orders){
-                                if (temporder.orderNo.equals(orderitem[0])){
-                                    order = temporder;
-                                }
-                            }
-                            List<DroneMove> orderPath = new ArrayList<>();
+                            Order order = Order.getOrderFromItem(orderitem, orders);
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);
-                                orderPath.addAll(orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks));
-                                position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-                                orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks));
-                                position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
+                                List<DroneMove> orderPath = makeOrderPath(position, order, restaurant, noFlyZone, startTicks);
                                 if (orderPath.size() + flightpath.size() <= 2000) {
                                     flightpath.addAll(orderPath);
-                                    deliveries = Delivery.setDelivered(deliveries, order);
+                                    Delivery.setDelivered(deliveries, order);
                                 } else {
-                                    deliveries = Delivery.setValidNotDelivered(deliveries, order);
+                                    Delivery.setValidNotDelivered(deliveries, order);
                                 }
                             }
                         }
-                        List<Point> coordinates = new ArrayList<>();
-                        for (DroneMove move : flightpath) {
-                            coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
-                        }
-                        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).fromLongitude, flightpath.get(flightpath.size() - 1).fromLatitude));
-                        writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
-                        writeDeliveries(date, deliveries);
-                        writeFlightPath(flightpath, date);
-                        //writeCombined(lineString, noFlyZone, baseUrlStr, date);
+                        writeFiles(date, deliveries, flightpath);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    public static void writeFiles(String date, Delivery[] deliveries, List<DroneMove> flightpath){
+        List<Point> coordinates = makePathCoordinates(flightpath);
+        writeGeojson(FeatureCollection.fromFeature(Feature.fromGeometry(LineString.fromLngLats(coordinates))).toJson(), date);
+        writeDeliveries(date, deliveries);
+        writeFlightPath(flightpath, date);
     }
 
     public static boolean checkURLS(String baseUrlStr, String date){
@@ -208,5 +190,21 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static List<Point> makePathCoordinates(List<DroneMove> flightpath){
+        List<Point> coordinates = new ArrayList<>();
+        for (DroneMove move : flightpath) {
+            coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
+        }
+        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).fromLongitude, flightpath.get(flightpath.size() - 1).fromLatitude));
+        return coordinates;
+    }
+
+    public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks){
+        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks));
+        position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
+        orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks));
+        return orderPath;
     }
 }

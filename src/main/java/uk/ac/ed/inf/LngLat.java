@@ -187,9 +187,11 @@ public record LngLat(double longitude, double latitude){
      * @param goal      Goal the drone is trying to get to, as a LngLat.
      * @param noFlyZone No-Fly zones that can't be flown through, as a mapbox MultiPolygon object.
      * @param explored  List of LngLat points already explored by the drone on the path to the goal.
+     * @param stayInCentral Whether the drone should attempt to stay in the central area once inside.
+     * @param centralURL    URL of the Central Area
      * @return  A float for the best move.
      */
-    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored){
+    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored, boolean stayInCentral, URL centralURL){
         float bestMove = -1;
         double bestDistance = 1000;
         for (float i = 0; i < 360; i += 22.5){
@@ -204,8 +206,15 @@ public record LngLat(double longitude, double latitude){
                 boolean intersects = intersectsNoFlyZone(noFlyZone, position, i);
                 if (!intersects) {
                     if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
-                        bestMove = i;
-                        bestDistance = position.nextPosition(i).distanceTo(goal);
+                        if (stayInCentral) {
+                            if (!position.inCentralArea(centralURL) || position.nextPosition(i).inCentralArea(centralURL)) {
+                                bestMove = i;
+                                bestDistance = position.nextPosition(i).distanceTo(goal);
+                            }
+                        } else {
+                            bestMove = i;
+                            bestDistance = position.nextPosition(i).distanceTo(goal);
+                        }
                     }
                 }
             }

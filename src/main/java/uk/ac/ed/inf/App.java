@@ -31,6 +31,7 @@ public class App {
             // check if all urls needed exist and are correct
             if (checkURLS(baseUrlStr, date)) {
                 try {
+                    URL centralURL = new URL(baseUrlStr + "centralArea/");
                     // get all the restaurants and orders from REST server
                     Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
                     Order[] orders = Order.getOrders(baseUrlStr, date);
@@ -53,12 +54,14 @@ public class App {
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);
                                 // construct the path to and from the restaurant
-                                List<DroneMove> orderPath = makeOrderPath(position, order, restaurant, noFlyZone, startTicks);
+                                List<DroneMove> orderPath = makeOrderPath(position, order, restaurant, noFlyZone, startTicks, centralURL);
                                 // if the flightpath would exceed 2000 moves, add the constructed path to the total flightpath and set the order to delivered
                                 if (orderPath.size() + flightpath.size() <= 2000) {
                                     flightpath.addAll(orderPath);
                                     Delivery.setDelivered(deliveries, order);
-                                // otherwise set startus to ValidButNotDelivered
+                                    // next drone move starts from end point of the previous flightpath
+                                    position = new LngLat(orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude);
+                                // otherwise set status to ValidButNotDelivered
                                 } else {
                                     Delivery.setValidNotDelivered(deliveries, order);
                                 }
@@ -156,13 +159,15 @@ public class App {
      * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through.
      * @param order     The order which the drone is attempting to deliver.
      * @param startTicks         The initial number of ticks of the first calculation.
+     * @param stayInCentral Whether the drone should attempt to stay in the central area once inside.
+     * @param centralURL    URL of the Central Area
      * @return          A list of drone moves generated for this part of the flightpath.
      */
-    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks){
+    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks, boolean stayInCentral, URL centralURL){
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
         while (!position.closeTo(goal)) {
-            float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored);
+            float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored, stayInCentral, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
             orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             explored.add(position);
@@ -238,10 +243,10 @@ public class App {
      * @param startTicks    The number of ticks the flightpath calculation started at.
      * @return
      */
-    public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks){
-        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks));
+    public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL baseURL){
+        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks, false, baseURL));
         position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-        orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks));
+        orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks, true, baseURL));
         return orderPath;
     }
 }

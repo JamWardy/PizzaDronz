@@ -245,8 +245,18 @@ public class App {
      */
     public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL baseURL){
         List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks, false, baseURL));
+
+        for (int i = orderPath.size() - 2; i >= 0; i--){
+            float newAngle = ((Float.parseFloat(orderPath.get(i).angle)+ 180) % 360);
+            LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude);
+            orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
+        }
+        orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude,  orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, System.currentTimeMillis() - startTicks));
+
+        /*
         position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
         orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks, true, baseURL));
+         */
         return orderPath;
     }
 }

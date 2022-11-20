@@ -90,7 +90,7 @@ public class App {
     }
 
     /**
-     * Check that all the URLs that are required during the running of the program exist and are valid.
+     * Check that all the URLs that are required during the running of the program exist and are valid, ie do not trigger an exception.
      * @param baseUrlStr    The base of the URL through which the REST server is accessed.
      * @param date  The date the pizzas have been ordered on.
      * @return  A boolean for whether the URLs required are valid.

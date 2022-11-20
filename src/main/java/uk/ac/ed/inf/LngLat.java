@@ -194,24 +194,33 @@ public record LngLat(double longitude, double latitude){
     public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored, boolean stayInCentral, URL centralURL){
         float bestMove = -1;
         double bestDistance = 1000;
+        // search through all possible moves
         for (float i = 0; i < 360; i += 22.5){
             boolean visited = false;
+            // check point has not already been explored on the path
             for (LngLat point: explored){
+                // if possible move is close to a point that has already been explored, mark as visited
                 if (position.nextPosition(i).closeTo(point)){
                     visited = true;
                     break;
                 }
             }
             if (!visited) {
+                // check if the move would cause the flightpath to go through the no-fly zone
                 boolean intersects = intersectsNoFlyZone(noFlyZone, position, i);
                 if (!intersects) {
+                    // if the move would be an improvement compared to the current best move (smaller euclidean distance to the goal)
                     if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
                         if (stayInCentral) {
+                            // if the move stays in the central area if it has to
                             if (!position.inCentralArea(centralURL) || position.nextPosition(i).inCentralArea(centralURL)) {
+                                // select the current move as a new best
                                 bestMove = i;
                                 bestDistance = position.nextPosition(i).distanceTo(goal);
                             }
+                        // if the move doesn't need to stay in the central area (ie is going to a restaurant)
                         } else {
+                            // select the current move as a new best
                             bestMove = i;
                             bestDistance = position.nextPosition(i).distanceTo(goal);
                         }

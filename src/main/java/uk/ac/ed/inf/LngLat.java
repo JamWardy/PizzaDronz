@@ -187,11 +187,10 @@ public record LngLat(double longitude, double latitude){
      * @param goal      Goal the drone is trying to get to, as a LngLat.
      * @param noFlyZone No-Fly zones that can't be flown through, as a mapbox MultiPolygon object.
      * @param explored  List of LngLat points already explored by the drone on the path to the goal.
-     * @param stayInCentral Whether the drone should attempt to stay in the central area once inside.
      * @param centralURL    URL of the Central Area
      * @return  A float for the best move.
      */
-    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored, boolean stayInCentral, URL centralURL){
+    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored,  URL centralURL){
         float bestMove = -1;
         double bestDistance = 1000;
         // search through all possible moves
@@ -211,19 +210,12 @@ public record LngLat(double longitude, double latitude){
                 if (!intersects) {
                     // if the move would be an improvement compared to the current best move (smaller euclidean distance to the goal)
                     if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
-                        if (stayInCentral) {
-                            // if the move stays in the central area if it has to
-                            if (!position.inCentralArea(centralURL) || position.nextPosition(i).inCentralArea(centralURL)) {
+                            // if the move has left central area it cannot return
+                            if (position.inCentralArea(centralURL) || !position.nextPosition(i).inCentralArea(centralURL)) {
                                 // select the current move as a new best
                                 bestMove = i;
                                 bestDistance = position.nextPosition(i).distanceTo(goal);
                             }
-                        // if the move doesn't need to stay in the central area (ie is going to a restaurant)
-                        } else {
-                            // select the current move as a new best
-                            bestMove = i;
-                            bestDistance = position.nextPosition(i).distanceTo(goal);
-                        }
                     }
                 }
             }

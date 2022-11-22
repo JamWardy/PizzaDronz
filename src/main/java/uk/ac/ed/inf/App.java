@@ -118,40 +118,6 @@ public class App {
         return ok;
     }
 
-
-    /**
-     * Writes to a geoJson file which contains the drone flightpath as well as the No-Fly Zones and the central area,
-     * at 'resultfiles/combined-date.geojson'.
-     * @param flightpath    The flight path of the drone.
-     * @param noFlyZone     The No-Fly Zone the drone avoids.
-     * @param baseUrlStr    The base URL from which the central area's co-ordinates are requested.
-     * @param date          The date the flight path is generated for.
-     */
-    public static void writeCombined(LineString flightpath, MultiPolygon noFlyZone, String baseUrlStr, String date){
-        try {
-            Feature path = Feature.fromGeometry(flightpath);
-            Feature noflypolygon = Feature.fromGeometry(noFlyZone);
-            List<Feature> features = new ArrayList<>();
-            features.add(path);
-            features.add(noflypolygon);
-            List<List<Point>> centralAreaPoints = new ArrayList<>();
-            centralAreaPoints.add(new ArrayList<>());
-            LngLat[] centralArea = CentralArea.getInstance(new URL(baseUrlStr + "centralArea")).points;
-            for (LngLat point : centralArea) {
-                centralAreaPoints.get(0).add(Point.fromLngLat(point.longitude(), point.latitude()));
-            }
-            centralAreaPoints.get(0).add(Point.fromLngLat(centralArea[0].longitude(), centralArea[0].latitude()));
-            features.add(Feature.fromGeometry(Polygon.fromLngLats(centralAreaPoints)));
-            String combinedJson = FeatureCollection.fromFeatures(features).toJson();
-            FileWriter combinedWriter = new FileWriter("resultfiles/combined-" + date + ".geojson");
-            combinedWriter.write(combinedJson);
-            combinedWriter.close();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
     /**
      * Generates the list of drone moves for part of the drone's flightpath from the starting position to the goal.
      * @param position  Starting point of the drone.
@@ -159,15 +125,14 @@ public class App {
      * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through.
      * @param order     The order which the drone is attempting to deliver.
      * @param startTicks         The initial number of ticks of the first calculation.
-     * @param stayInCentral Whether the drone should attempt to stay in the central area once inside.
      * @param centralURL    URL of the Central Area
      * @return          A list of drone moves generated for this part of the flightpath.
      */
-    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks, boolean stayInCentral, URL centralURL){
+    public static List<DroneMove> orderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks, URL centralURL){
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
         while (!position.closeTo(goal)) {
-            float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored, stayInCentral, centralURL);
+            float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
             orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             explored.add(position);
@@ -244,7 +209,7 @@ public class App {
      * @return
      */
     public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL baseURL){
-        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks, false, baseURL));
+        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks, baseURL));
 
         for (int i = orderPath.size() - 2; i >= 0; i--){
             float newAngle = ((Float.parseFloat(orderPath.get(i).angle)+ 180) % 360);
@@ -252,11 +217,6 @@ public class App {
             orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
         }
         orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude,  orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, System.currentTimeMillis() - startTicks));
-
-        /*
-        position = new LngLat(orderPath.get(orderPath.size() - 1).toLongitude, orderPath.get(orderPath.size() - 1).toLatitude);
-        orderPath.addAll(orderPathToGoal(position, new LngLat(-3.186874, 55.944494), noFlyZone, order, startTicks, true, baseURL));
-         */
         return orderPath;
     }
 }

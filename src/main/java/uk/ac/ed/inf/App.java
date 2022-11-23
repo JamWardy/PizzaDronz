@@ -60,7 +60,7 @@ public class App {
                                     flightpath.addAll(orderPath);
                                     Delivery.setDelivered(deliveries, order);
                                     // next drone move starts from end point of the previous flightpath
-                                    position = new LngLat(orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude);
+                                    position = new LngLat(orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude());
                                 // otherwise set status to ValidButNotDelivered
                                 } else {
                                     Delivery.setValidNotDelivered(deliveries, order);
@@ -134,11 +134,11 @@ public class App {
         while (!position.closeTo(goal)) {
             float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
-            orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
+            orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             explored.add(position);
             position = newPosition;
         }
-        orderPath.add(new DroneMove(order.orderNo, position.longitude(), position.latitude() , position.longitude(), position.latitude(), System.currentTimeMillis() - startTicks));
+        orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude() , position.longitude(), position.latitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
     }
 
@@ -193,9 +193,9 @@ public class App {
     public static List<Point> makePathCoordinates(List<DroneMove> flightpath){
         List<Point> coordinates = new ArrayList<>();
         for (DroneMove move : flightpath) {
-            coordinates.add(Point.fromLngLat(move.fromLongitude, move.fromLatitude));
+            coordinates.add(Point.fromLngLat(move.getFromLongitude(), move.getFromLatitude()));
         }
-        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).fromLongitude, flightpath.get(flightpath.size() - 1).fromLatitude));
+        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).getFromLongitude(), flightpath.get(flightpath.size() - 1).getFromLatitude()));
         return coordinates;
     }
 
@@ -209,14 +209,14 @@ public class App {
      * @return
      */
     public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL baseURL){
-        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.longitude, restaurant.latitude), noFlyZone, order, startTicks, baseURL));
+        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, baseURL));
 
         for (int i = orderPath.size() - 2; i >= 0; i--){
-            float newAngle = ((Float.parseFloat(orderPath.get(i).angle)+ 180) % 360);
-            LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude);
-            orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
+            float newAngle = ((Float.parseFloat(orderPath.get(i).getAngle())+ 180) % 360);
+            LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude());
+            orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
         }
-        orderPath.add(new DroneMove(order.orderNo, orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude,  orderPath.get(orderPath.size()-1).toLongitude, orderPath.get(orderPath.size()-1).toLatitude, System.currentTimeMillis() - startTicks));
+        orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(),  orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
     }
 }

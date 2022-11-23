@@ -4,9 +4,9 @@ package uk.ac.ed.inf;
  * Class which represents a delivery outcome, as specified for the deliveries.json file
  */
 public class Delivery {
-    public String orderNo;
-    public String outcome;
-    public int costInPence;
+    private String orderNo;
+    private String outcome;
+    private int costInPence;
 
     /**
      * Default constructor for the Delivery class
@@ -20,6 +20,18 @@ public class Delivery {
         this.costInPence = costInPence;
     }
 
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public String getOutcome() {
+        return outcome;
+    }
+
+    public int getCostInPence() {
+        return costInPence;
+    }
+
     /**
      * Takes in all the orders and returns an array of Delivery objects, with the validity of each order.
      * @param orders        Array of all the orders to be turned into Delivery objects.
@@ -29,7 +41,7 @@ public class Delivery {
     public static Delivery[] getDeliveries(Order[] orders, Restaurant[] restaurants){
         Delivery[] deliveries = new Delivery[orders.length];
         for (int i = 0; i < orders.length; i++) {
-            deliveries[i] = new Delivery(orders[i].orderNo, orders[i].getValidity(restaurants), orders[i].priceTotalInPence);
+            deliveries[i] = new Delivery(orders[i].getOrderNo(), orders[i].getValidity(restaurants), orders[i].getPriceTotalInPence());
         }
         return deliveries;
     }
@@ -42,7 +54,7 @@ public class Delivery {
      */
     public static void setDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
-            if (delivery.orderNo.equals(order.orderNo)){
+            if (delivery.orderNo.equals(order.getOrderNo())){
                 delivery.outcome = OrderOutcome.Delivered.toString();
             }
         }
@@ -56,7 +68,7 @@ public class Delivery {
      */
     public static void setValidNotDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
-            if (delivery.orderNo.equals(order.orderNo)){
+            if (delivery.orderNo.equals(order.getOrderNo())){
                 delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
             }
         }

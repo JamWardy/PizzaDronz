@@ -25,16 +25,16 @@ public record LngLat(double longitude, double latitude){
      */
     public boolean inCentralArea(URL url){
         CentralArea centralArea = CentralArea.getInstance(url);
-        if (this.longitude <= centralArea.points[0].longitude || this.latitude >= centralArea.points[0].latitude){
+        if (this.longitude <= centralArea.getPoints()[0].longitude || this.latitude >= centralArea.getPoints()[0].latitude){
             return false;
         }
-        if (this.longitude <= centralArea.points[1].longitude || this.latitude <= centralArea.points[1].latitude){
+        if (this.longitude <= centralArea.getPoints()[1].longitude || this.latitude <= centralArea.getPoints()[1].latitude){
             return false;
         }
-        if (this.longitude >= centralArea.points[2].longitude || this.latitude <= centralArea.points[2].latitude){
+        if (this.longitude >= centralArea.getPoints()[2].longitude || this.latitude <= centralArea.getPoints()[2].latitude){
             return false;
         }
-        if (this.longitude >= centralArea.points[3].longitude || this.latitude >= centralArea.points[3].latitude){
+        if (this.longitude >= centralArea.getPoints()[3].longitude || this.latitude >= centralArea.getPoints()[3].latitude){
             return false;
         }
         else{

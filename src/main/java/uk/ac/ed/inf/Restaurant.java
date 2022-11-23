@@ -12,17 +12,38 @@ import java.net.URL;
 
 public class Restaurant {
     //attributes, each has the same name as in the JSON format received from the REST-request
-    public String name;
-    public double longitude;
-    public double latitude;
-    public Menu[] menu;
+    private String name;
+    private double longitude;
+    private double latitude;
+    private Menu[] menu;
 
     /**
      * Default constructor for Restaurant.
      */
-    public Restaurant(){
+    public Restaurant(){};
 
-    };
+    public Restaurant(String name, double longitude, double latitude, Menu[] menu){
+        this.name = name;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.menu = menu;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public double getLongitude(){
+        return longitude;
+    }
+
+    public double getLatitude(){
+        return latitude;
+    }
+
+    public Menu[] getMenu(){
+        return menu;
+    }
 
     /**
      * Performs a REST-request, retrieves the list of restaurants as a JSON, deserializes this
@@ -45,13 +66,5 @@ public class Restaurant {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Returns that restaurant's list of menu items as an array of Menu objects.
-     * @return An array of Menu objects.
-     */
-    public Menu[] getMenu(){
-        return this.menu;
     }
 }

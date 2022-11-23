@@ -11,7 +11,11 @@ Singleton central area class which contains an array of four LngLat objects whic
  */
 public class CentralArea {
     private static CentralArea instance = null;
-    public LngLat[] points;
+    private LngLat[] points;
+
+    public LngLat[] getPoints(){
+        return points;
+    }
 
     /**
      * Private constructor class for CentralArea, this performs a REST-request which gets a JSON of the longitude and latitude

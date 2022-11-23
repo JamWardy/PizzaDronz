@@ -13,16 +13,48 @@ import java.util.Comparator;
  * Class that represents the order information for an order made
  */
 public class Order {
-    public String orderNo;
-    public String orderDate;
-    public String customer;
-    public String creditCardNumber;
-    public String creditCardExpiry;
-    public String cvv;
-    public int priceTotalInPence;
-    public String[] orderItems;
+    private String orderNo;
+    private String orderDate;
+    private String customer;
+    private String creditCardNumber;
+    private String creditCardExpiry;
+    private String cvv;
+    private int priceTotalInPence;
+    private String[] orderItems;
 
     public Order(){};
+
+    public String getOrderNo(){
+        return orderNo;
+    }
+
+    public String getOrderDate(){
+        return orderDate;
+    }
+
+    public String getCustomer() {
+        return customer;
+    }
+
+    public String getCreditCardNumber() {
+        return creditCardNumber;
+    }
+
+    public String getCreditCardExpiry() {
+        return creditCardExpiry;
+    }
+
+    public String getCvv() {
+        return cvv;
+    }
+
+    public int getPriceTotalInPence(){
+        return priceTotalInPence;
+    }
+
+    public String[] getOrderItems() {
+        return orderItems;
+    }
 
     /**
      * Returns the cost in pence of having a set of items (passed as a parameter)
@@ -48,10 +80,10 @@ public class Order {
             for (String orderItem : orderItems) {
                 boolean orderItemInRestaurant = false; //boolean for whether this item ordered is on the menu for this restaurant
                 //see if that item is in the restaurant's menu
-                for (Menu item : restaurant.menu) {
-                    if (item.name.equals(orderItem)) { //if the names of the item ordered and the menu item are the same, this item is on the menu for this restaurant
+                for (Menu item : restaurant.getMenu()) {
+                    if (item.getName().equals(orderItem)) { //if the names of the item ordered and the menu item are the same, this item is on the menu for this restaurant
                         orderItemInRestaurant = true;
-                        cost += item.priceInPence; //add item cost to total delivery cost
+                        cost += item.getPriceInPence(); //add item cost to total delivery cost
                         break;
                     }
                 }
@@ -138,7 +170,7 @@ public class Order {
     public boolean isPizzaValid(String pizza, Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
             for (Menu menu: restaurant.getMenu()){
-                if (menu.name.equals(pizza)){
+                if (menu.getName().equals(pizza)){
                     return true;
                 }
             }
@@ -236,7 +268,7 @@ public class Order {
     public Restaurant getRestaurant(Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
             for (Menu item: restaurant.getMenu()){
-                if (item.name.equals(this.orderItems[0])){
+                if (item.getName().equals(this.orderItems[0])){
                     return restaurant;
                 }
             }
@@ -254,7 +286,7 @@ public class Order {
     public static ArrayList<String[]> sortOrderNos(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
-            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude,order.getRestaurant(restaurants).latitude));
+            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
             String[] orderInfo = {order.orderNo, Double.toString(dist)};
             orderInfos.add(orderInfo);
         }

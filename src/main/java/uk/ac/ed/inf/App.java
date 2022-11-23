@@ -11,7 +11,6 @@ import com.mapbox.geojson.*;
 import java.util.*;
 
 public class App {
-
     /**
      * Invokes the program
      * @param args date (the date for which the orders are processed) baseUrlString (the URL base to which REST-requests are made).
@@ -41,7 +40,7 @@ public class App {
                         List<DroneMove> flightpath = new ArrayList<>();
                         // drone starts at Appleton Tower
                         LngLat position = new LngLat(-3.186874, 55.944494);
-                        MultiPolygon noFlyZone = LngLat.getNoFlyZone(baseUrlStr);
+                        MultiPolygon noFlyZone = NoFlyZone.getNoFlyZone(baseUrlStr);
                         // sort order numbers based off proximity to the restaurant
                         ArrayList<String[]> sortedOrders = Order.sortOrderNos(orders, restaurants, position);
                         // time the start of move calculation
@@ -132,7 +131,7 @@ public class App {
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
         while (!position.closeTo(goal)) {
-            float bestMove = LngLat.findBestMove(position, goal, noFlyZone, explored, centralURL);
+            float bestMove = findBestMove(position, goal, noFlyZone, explored, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
             orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             explored.add(position);
@@ -206,10 +205,11 @@ public class App {
      * @param restaurant    The restaurant the drone is delivering from.
      * @param noFlyZone The No-Fly zone the drone avoids.
      * @param startTicks    The number of ticks the flightpath calculation started at.
-     * @return
+     * @param centralURL    URL from which the central area is accessed.
+     * @return  Section of the flightpath, as a list of drone moves.
      */
-    public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL baseURL){
-        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, baseURL));
+    public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL centralURL){
+        List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, centralURL));
 
         for (int i = orderPath.size() - 2; i >= 0; i--){
             float newAngle = ((Float.parseFloat(orderPath.get(i).getAngle())+ 180) % 360);
@@ -218,5 +218,46 @@ public class App {
         }
         orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(),  orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
+    }
+    /**
+     * Finds the best legal unexplored drone move at a given position, trying to get to a given goal.
+     * @param position  Current position of the drone, as a LngLat.
+     * @param goal      Goal the drone is trying to get to, as a LngLat.
+     * @param noFlyZone No-Fly zones that can't be flown through, as a mapbox MultiPolygon object.
+     * @param explored  List of LngLat points already explored by the drone on the path to the goal.
+     * @param centralURL    URL of the Central Area
+     * @return  A float for the best move.
+     */
+    public static float findBestMove(LngLat position, LngLat goal, MultiPolygon noFlyZone, List<LngLat> explored,  URL centralURL){
+        float bestMove = -1;
+        double bestDistance = 1000;
+        // search through all possible moves
+        for (float i = 0; i < 360; i += 22.5){
+            boolean visited = false;
+            // check point has not already been explored on the path
+            for (LngLat point: explored){
+                // if possible move is close to a point that has already been explored, mark as visited
+                if (position.nextPosition(i).closeTo(point)){
+                    visited = true;
+                    break;
+                }
+            }
+            if (!visited) {
+                // check if the move would cause the flightpath to go through the no-fly zone
+                boolean intersects = NoFlyZone.intersectsNoFlyZone(noFlyZone, position, i);
+                if (!intersects) {
+                    // if the move would be an improvement compared to the current best move (smaller euclidean distance to the goal)
+                    if (position.nextPosition(i).distanceTo(goal) < bestDistance) {
+                        // if the move has left central area it cannot return
+                        if (position.inCentralArea(centralURL) || !position.nextPosition(i).inCentralArea(centralURL)) {
+                            // select the current move as a new best
+                            bestMove = i;
+                            bestDistance = position.nextPosition(i).distanceTo(goal);
+                        }
+                    }
+                }
+            }
+        }
+        return bestMove;
     }
 }

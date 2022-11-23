@@ -13,6 +13,10 @@ public class CentralArea {
     private static CentralArea instance = null;
     private LngLat[] points;
 
+    /**
+     *
+     * @return Co-ordinates of the vertices of the rectangular central area, starting top left and moving anti-clockwise
+     */
     public LngLat[] getPoints(){
         return points;
     }

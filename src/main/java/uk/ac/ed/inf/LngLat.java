@@ -104,7 +104,7 @@ public record LngLat(double longitude, double latitude){
             for (NoFlyZone zone: noFlyZone){
                 List<List<Point>> points = new ArrayList<>();
                 points.add(new ArrayList<>());
-                for (double[] point: zone.coordinates) {
+                for (double[] point: zone.getCoordinates()) {
                     points.get(0).add(Point.fromLngLat(point[0], point[1]));
                 }
                 polygons.add(Polygon.fromLngLats(points));

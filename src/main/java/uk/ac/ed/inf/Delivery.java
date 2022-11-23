@@ -1,7 +1,7 @@
 package uk.ac.ed.inf;
 
 /**
- * Class which represents a delivery outcome, as specified for the deliveries.json file
+ * Delivery outcome of a specific order, as specified for the deliveries.json file
  */
 public class Delivery {
     private String orderNo;
@@ -50,7 +50,6 @@ public class Delivery {
      * Changes the outcome of a specific order in an array of deliveries to Delivered.
      * @param deliveries    Array of Delivery objects.
      * @param order         The Order object for which the outcome needs to be changed.
-     * @return  An array of Delivery objects, with the outcome changed.
      */
     public static void setDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
@@ -64,7 +63,6 @@ public class Delivery {
      * Changes the outcome of a specific order in an array of deliveries to ValidButNotDelivered.
      * @param deliveries    Array of Delivery objects.
      * @param order         The Order object for which the outcome needs to be changed.
-     * @return  An array of Delivery objects, with the outcome changed.
      */
     public static void setValidNotDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){

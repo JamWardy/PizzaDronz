@@ -3,7 +3,7 @@ package uk.ac.ed.inf;
 import javax.annotation.Nullable;
 
 /**
- * Represents a drone move, in the format specified in the flightpath json file.
+ * Represents a drone move, in the format specified in the flightpath .json file.
  */
 @Nullable
 public class DroneMove {
@@ -53,22 +53,42 @@ public class DroneMove {
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
+    /**
+     *
+     * @return Longitude of the drone before the move.
+     */
     public double getFromLongitude(){
         return fromLongitude;
     }
 
+    /**
+     *
+     * @return Latitude of the drone before the move.
+     */
     public double getFromLatitude(){
         return fromLatitude;
     }
 
+    /**
+     *
+     * @return Angle the drone moved in, as a string. Can be between 0 and 337.5 degrees, in increments of 22.5 degrees, or null when hovering.
+     */
     public String getAngle(){
         return angle;
     }
 
+    /**
+     *
+     * @return Longitude of the drone after the move.
+     */
     public double getToLongitude() {
         return toLongitude;
     }
 
+    /**
+     *
+     * @return Latitude of the drone after the move.
+     */
     public double getToLatitude(){
         return  toLatitude;
     }

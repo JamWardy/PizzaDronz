@@ -1,15 +1,10 @@
 package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mapbox.geojson.*;
 
-import java.io.IOException;
 import java.lang.Math;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents a point as a latitude and longitude pair of co-ordinates.

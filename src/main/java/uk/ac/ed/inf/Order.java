@@ -10,7 +10,7 @@ import java.time.*;
 import java.util.Comparator;
 
 /**
- * Class that represents the order information for an order made
+ * Class that represents an order made
  */
 public class Order {
     private String orderNo;
@@ -109,18 +109,6 @@ public class Order {
     public static Order[] getOrders(String baseUrl, String date){
         try{
             URL url = new URL(baseUrl + "orders/" + date);
-            Order[] orders = new ObjectMapper().readValue(url, Order[].class);
-            return orders;
-        }
-        catch (IOException e){
-            e.printStackTrace();
-            return new Order[0];
-        }
-    }
-
-    public static Order[] getOrdersNoDate(String baseUrl){
-        try{
-            URL url = new URL(baseUrl + "orders/");
             Order[] orders = new ObjectMapper().readValue(url, Order[].class);
             return orders;
         }

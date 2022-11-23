@@ -24,6 +24,10 @@ public class Delivery {
         return orderNo;
     }
 
+    /**
+     *
+     * @return  Order outcome as a string, can take the values defined in the OrderOutcome Enum.
+     */
     public String getOutcome() {
         return outcome;
     }

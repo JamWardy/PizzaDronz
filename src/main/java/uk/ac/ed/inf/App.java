@@ -40,7 +40,7 @@ public class App {
                         List<DroneMove> flightpath = new ArrayList<>();
                         // drone starts at Appleton Tower
                         LngLat position = new LngLat(-3.186874, 55.944494);
-                        MultiPolygon noFlyZone = NoFlyZone.getNoFlyZone(baseUrlStr);
+                        MultiPolygon noFlyZone = NoFlyZone.getNoFlyZones(baseUrlStr);
                         // sort order numbers based off proximity to the restaurant
                         ArrayList<String[]> sortedOrders = Order.sortOrderNos(orders, restaurants, position);
                         // time the start of move calculation

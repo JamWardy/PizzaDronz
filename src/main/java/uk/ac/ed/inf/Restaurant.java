@@ -9,7 +9,6 @@ import java.net.URL;
  * Restaurant class used to represent the results from the REST-request. Has the attributes name, longitude, latitude
  * and an array of Menu objects on offer by the restaurant.
  */
-
 public class Restaurant {
     //attributes, each has the same name as in the JSON format received from the REST-request
     private String name;

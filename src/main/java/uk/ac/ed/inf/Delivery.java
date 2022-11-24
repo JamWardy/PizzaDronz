@@ -4,14 +4,14 @@ package uk.ac.ed.inf;
  * Delivery outcome of a specific order, as specified for the deliveries.json file
  */
 public class Delivery {
-    private String orderNo;
+    private final String orderNo;
     private String outcome;
-    private int costInPence;
+    private final int costInPence;
 
     /**
      * Default constructor for the Delivery class
      * @param orderNo       The order number of the order being delivered, as a String.
-     * @param outcome       The outcome of the order, this is a String which can take the values specified in the OrderOutcome Enum.
+     * @param outcome       The outcome of the order, this is a String which can take the values specified in the OrderOutcome Enum or 'Valid' (before flightpath calculated)
      * @param costInPence   The cost of the order in pence, as an integer.
      */
     public Delivery(String orderNo, String outcome, int costInPence){

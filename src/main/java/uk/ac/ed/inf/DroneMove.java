@@ -7,13 +7,13 @@ import javax.annotation.Nullable;
  */
 @Nullable
 public class DroneMove {
-    private String orderNo;
-    private double fromLongitude;
-    private double fromLatitude;
+    private final String orderNo;
+    private final double fromLongitude;
+    private final double fromLatitude;
     private String angle = "null";
-    private double toLongitude;
-    private double toLatitude;
-    private long ticksSinceStartOfCalculation;
+    private final double toLongitude;
+    private final double toLatitude;
+    private final long ticksSinceStartOfCalculation;
 
     /**
      * Constructor with a non-null move angle.
@@ -53,6 +53,10 @@ public class DroneMove {
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
+    /**
+     *
+     * @return Order number of the order being delivered.
+     */
     public String getOrderNo() {
         return orderNo;
     }
@@ -97,6 +101,10 @@ public class DroneMove {
         return  toLatitude;
     }
 
+    /**
+     *
+     * @return  Number of milliseconds elapsed since the drone's flightpath started being calculated.
+     */
     public long getTicksSinceStartOfCalculation() {
         return ticksSinceStartOfCalculation;
     }

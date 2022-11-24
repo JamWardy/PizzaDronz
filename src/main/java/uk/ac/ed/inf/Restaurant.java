@@ -9,7 +9,7 @@ import java.net.URL;
  * Restaurant record used to represent the results from the REST-request. Has the attributes name, longitude, latitude
  * and an array of Menu objects on offer by the restaurant.
  */
-public record Restaurant(String name, double longitude, double latitude, Menu[] menu) {
+public record Restaurant(String name, double longitude, double latitude, Item[] menu) {
     public String getName(){
         return name;
     }
@@ -22,7 +22,7 @@ public record Restaurant(String name, double longitude, double latitude, Menu[] 
         return latitude;
     }
 
-    public Menu[] getMenu(){
+    public Item[] getMenu(){
         return menu;
     }
 

@@ -243,7 +243,7 @@ public class App {
             }
             if (!visited) {
                 // check if the move would cause the flightpath to go through the no-fly zone
-                boolean intersects = NoFlyZone.intersectsNoFlyZone(noFlyZone, position, i);
+                boolean intersects = NoFlyZone.intersectsNoFlyZones(noFlyZone, position, i);
                 if (!intersects) {
                     // if the move would be an improvement compared to the current best move (smaller euclidean distance to the goal)
                     if (position.nextPosition(i).distanceTo(goal) < bestDistance) {

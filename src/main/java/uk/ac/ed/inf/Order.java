@@ -70,7 +70,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
             for (String orderItem : orderItems) {
                 boolean orderItemInRestaurant = false; //boolean for whether this item ordered is on the menu for this restaurant
                 //see if that item is in the restaurant's menu
-                for (Menu item : restaurant.getMenu()) {
+                for (Item item : restaurant.getMenu()) {
                     if (item.getName().equals(orderItem)) { //if the names of the item ordered and the menu item are the same, this item is on the menu for this restaurant
                         orderItemInRestaurant = true;
                         cost += item.getPriceInPence(); //add item cost to total delivery cost
@@ -147,8 +147,8 @@ public record Order(String orderNo, String orderDate, String customer, String cr
      */
     public boolean isPizzaValid(String pizza, Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
-            for (Menu menu: restaurant.getMenu()){
-                if (menu.getName().equals(pizza)){
+            for (Item item: restaurant.getMenu()){
+                if (item.getName().equals(pizza)){
                     return true;
                 }
             }
@@ -245,7 +245,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
      */
     public Restaurant getRestaurant(Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
-            for (Menu item: restaurant.getMenu()){
+            for (Item item: restaurant.getMenu()){
                 if (item.getName().equals(this.orderItems[0])){
                     return restaurant;
                 }

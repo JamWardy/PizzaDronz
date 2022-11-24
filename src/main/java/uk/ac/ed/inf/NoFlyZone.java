@@ -65,19 +65,19 @@ public class NoFlyZone {
     }
 
     /**
-     * Checks if a drone move intersects the No-Fly zone.
-     * @param noFlyZone The No-Fly Zone of the area, as a mapbox MultiPolygon object.
+     * Checks if a drone move intersects the No-Fly zones.
+     * @param noFlyZones The No-Fly Zones of the area, as a mapbox MultiPolygon object.
      * @param position  The current position of the drone, as a LngLat object.
      * @param i         The angle of the drone move.
      * @return          A boolean for whether the drone move intersects the No-Fly Zone.
      */
-    public static boolean intersectsNoFlyZone(MultiPolygon noFlyZone, LngLat position, float i){
+    public static boolean intersectsNoFlyZones(MultiPolygon noFlyZones, LngLat position, float i){
         boolean intersects = false;
         // check intersections for each no-fly zone in the no-fly zones
-        for (List<List<Point>> polygon: noFlyZone.coordinates()){
+        for (List<List<Point>> polygon: noFlyZones.coordinates()){
             // iterate through each vertex on the no-fly zone (includes the first vertex twice)
             for (int j = 0; j < polygon.get(0).size()-1; j++){
-                // add the vertex and its adjacanet vertex to a list
+                // add the vertex and its adjacent vertex to a list
                 List<Point> border = new ArrayList<>();
                 border.add(polygon.get(0).get(j));
                 border.add(polygon.get(0).get(j+1));

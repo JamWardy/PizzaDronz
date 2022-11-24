@@ -34,13 +34,13 @@ public class App {
                     // get all the restaurants and orders from REST server
                     Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL(baseUrlStr));
                     Order[] orders = Order.getOrders(baseUrlStr, date);
+                    MultiPolygon noFlyZone = NoFlyZone.getNoFlyZones(baseUrlStr);
                     // only make flightpath if there are orders, this prevents errors
                     if (orders.length > 0) {
                         Delivery[] deliveries = Delivery.getDeliveries(orders, restaurants);
                         List<DroneMove> flightpath = new ArrayList<>();
                         // drone starts at Appleton Tower
                         LngLat position = new LngLat(-3.186874, 55.944494);
-                        MultiPolygon noFlyZone = NoFlyZone.getNoFlyZones(baseUrlStr);
                         // sort order numbers based off proximity to the restaurant
                         ArrayList<String[]> sortedOrders = Order.sortOrderNos(orders, restaurants, position);
                         // time the start of move calculation
@@ -69,7 +69,7 @@ public class App {
                         writeFiles(date, deliveries, flightpath);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("I/O Exception, please check connection and input data");
                 }
             }
         }
@@ -156,7 +156,7 @@ public class App {
     }
 
     /**
-     * Writes the flightpath of the drone in terms of coordinates in geojson format to the 'resultfiles/flightpath-date.geojson' file.
+     * Writes the flightpath of the drone in terms of coordinates in geojson format to the 'resultfiles/drone-date.geojson' file.
      * @param json  The flightpath of the drone in geojson format, as a string.
      * @param date  The date of the orders of this flightpath.
      */
@@ -210,7 +210,6 @@ public class App {
      */
     public static List<DroneMove> makeOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL centralURL){
         List<DroneMove> orderPath = (orderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, centralURL));
-
         for (int i = orderPath.size() - 2; i >= 0; i--){
             float newAngle = ((Float.parseFloat(orderPath.get(i).getAngle())+ 180) % 360);
             LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude());

@@ -12,17 +12,7 @@ import java.util.Comparator;
 /**
  * Class that represents an order made
  */
-public class Order {
-    private String orderNo;
-    private String orderDate;
-    private String customer;
-    private String creditCardNumber;
-    private String creditCardExpiry;
-    private String cvv;
-    private int priceTotalInPence;
-    private String[] orderItems;
-
-    public Order(){};
+public record Order(String orderNo, String orderDate, String customer, String creditCardNumber, String creditCardExpiry, String cvv, int priceTotalInPence, String[] orderItems) {
 
     public String getOrderNo(){
         return orderNo;

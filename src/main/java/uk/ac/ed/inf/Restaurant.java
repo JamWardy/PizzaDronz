@@ -6,28 +6,10 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * Restaurant class used to represent the results from the REST-request. Has the attributes name, longitude, latitude
+ * Restaurant record used to represent the results from the REST-request. Has the attributes name, longitude, latitude
  * and an array of Menu objects on offer by the restaurant.
  */
-public class Restaurant {
-    //attributes, each has the same name as in the JSON format received from the REST-request
-    private String name;
-    private double longitude;
-    private double latitude;
-    private Menu[] menu;
-
-    /**
-     * Default constructor for Restaurant.
-     */
-    public Restaurant(){};
-
-    public Restaurant(String name, double longitude, double latitude, Menu[] menu){
-        this.name = name;
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.menu = menu;
-    }
-
+public record Restaurant(String name, double longitude, double latitude, Menu[] menu) {
     public String getName(){
         return name;
     }

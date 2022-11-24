@@ -53,6 +53,10 @@ public class DroneMove {
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
     }
 
+    public String getOrderNo() {
+        return orderNo;
+    }
+
     /**
      *
      * @return Longitude of the drone before the move.
@@ -91,5 +95,9 @@ public class DroneMove {
      */
     public double getToLatitude(){
         return  toLatitude;
+    }
+
+    public long getTicksSinceStartOfCalculation() {
+        return ticksSinceStartOfCalculation;
     }
 }

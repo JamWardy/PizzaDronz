@@ -1,6 +1,10 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Point;
+
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a drone move, in the format specified in the flightpath .json file.
@@ -10,7 +14,7 @@ public class DroneMove {
     private final String orderNo;
     private final double fromLongitude;
     private final double fromLatitude;
-    private String angle = "null";
+    private final String angle;
     private final double toLongitude;
     private final double toLatitude;
     private final long ticksSinceStartOfCalculation;
@@ -48,6 +52,7 @@ public class DroneMove {
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;
         this.fromLatitude = fromLatitude;
+        this.angle = "null";
         this.toLongitude = toLongitude;
         this.toLatitude = toLatitude;
         this.ticksSinceStartOfCalculation = ticksSinceStartOfCalculation;
@@ -107,5 +112,19 @@ public class DroneMove {
      */
     public long getTicksSinceStartOfCalculation() {
         return ticksSinceStartOfCalculation;
+    }
+
+    /**
+     * Takes the json formatted flightpath and turns it into a List of points the drone moves through.
+     * @param flightpath    The full flightpath of the drone.
+     * @return  The list of points that the drone moves through.
+     */
+    public static List<Point> makePathCoordinates(List<DroneMove> flightpath){
+        List<Point> coordinates = new ArrayList<>();
+        for (DroneMove move : flightpath) {
+            coordinates.add(Point.fromLngLat(move.getFromLongitude(), move.getFromLatitude()));
+        }
+        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).getFromLongitude(), flightpath.get(flightpath.size() - 1).getFromLatitude()));
+        return coordinates;
     }
 }

@@ -48,7 +48,7 @@ public class App {
                         // for all orders on the day
                         for (String[] orderInfo : sortedOrders) {
                             // get order from its order number
-                            Order order = Order.getOrderFromItem(orderInfo[0], orders);
+                            Order order = Order.getOrderFromOrderNo(orderInfo[0], orders);
                             // if order is valid
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);

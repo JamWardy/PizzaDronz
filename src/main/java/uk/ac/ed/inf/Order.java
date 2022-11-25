@@ -273,12 +273,12 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     }
 
     /**
-     * Gets the order object, from its order number. If order can't be found returns the first order in the list.
+     * Gets the order object from its order number. If order can't be found returns the first order in the list.
      * @param orderNumber   The order number of the required order.
      * @param orders    All the orders.
      * @return  The order object corresponding to the order number.
      */
-    public static Order getOrderFromItem(String orderNumber, Order[] orders){
+    public static Order getOrderFromOrderNo(String orderNumber, Order[] orders){
         Order order = orders[0];
         for (Order temporder : orders) {
             if (temporder.orderNo.equals(orderNumber)) {

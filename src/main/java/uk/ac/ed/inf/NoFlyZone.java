@@ -14,11 +14,7 @@ import java.util.List;
 /**
  * Representation of a No-Fly Zone, in the format returned by the REST-server.
  */
-public class NoFlyZone {
-    private String name;
-    private double[][] coordinates;
-
-    public NoFlyZone(){};
+public record NoFlyZone(String name, double[][] coordinates) {
 
     public String getName() {
         return name;

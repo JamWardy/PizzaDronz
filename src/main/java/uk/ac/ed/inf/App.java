@@ -42,13 +42,11 @@ public class App {
                         // drone starts at Appleton Tower
                         LngLat position = new LngLat(-3.186874, 55.944494);
                         // sort order numbers based off proximity to the restaurant
-                        ArrayList<String[]> sortedOrders = Order.sortOrderNos(orders, restaurants, position);
+                        ArrayList<Order> sortedOrders = Order.sortOrders(orders, restaurants, position);
                         // time the start of move calculation
                         long startTicks = System.currentTimeMillis();
                         // for all orders on the day
-                        for (String[] orderInfo : sortedOrders) {
-                            // get order from its order number
-                            Order order = Order.getOrderFromOrderNo(orderInfo[0], orders);
+                        for (Order order : sortedOrders) {
                             // if order is valid
                             if (order.getValidity(restaurants).equals("Valid")) {
                                 Restaurant restaurant = order.getRestaurant(restaurants);

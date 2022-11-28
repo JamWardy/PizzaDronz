@@ -255,13 +255,13 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     }
 
     /**
-     * Creates a list of pairs of order numbers and distances to a restaurant, sorted in ascending order by distance to the restaurant.
+     * Returns a list of orders, sorted in ascending order by distance between a starting position and the restaurant the order is picked up from .
      * @param orders    List of orders the drone is trying to deliver.
      * @param restaurants   List of restaurants pizzas can be ordered from.
      * @param position  Starting position of the drone.
-     * @return  A sorted list of pairs of order numbers and distances to a restaurant.
+     * @return  A sorted list of pairs of orders.
      */
-    public static ArrayList<String[]> sortOrderNos(Order[] orders, Restaurant[] restaurants, LngLat position){
+    public static ArrayList<Order> sortOrders(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
@@ -269,7 +269,11 @@ public record Order(String orderNo, String orderDate, String customer, String cr
             orderInfos.add(orderInfo);
         }
         orderInfos.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
-        return orderInfos;
+        ArrayList<Order> sortedOrders = new ArrayList<>();
+        for (String[] each: orderInfos){
+            sortedOrders.add(getOrderFromOrderNo(each[0], orders));
+        }
+        return sortedOrders;
     }
 
     /**

@@ -10,17 +10,9 @@ import java.time.*;
 import java.util.Comparator;
 
 /**
- * Class that represents an order made
+ * Class that represents an order made by a customer.
  */
 public record Order(String orderNo, String orderDate, String customer, String creditCardNumber, String creditCardExpiry, String cvv, int priceTotalInPence, String[] orderItems) {
-
-    public String getOrderNo(){
-        return orderNo;
-    }
-
-    public int getPriceTotalInPence(){
-        return priceTotalInPence;
-    }
 
     /**
      * Returns the cost in pence of having a set of items (passed as a parameter)
@@ -46,10 +38,10 @@ public record Order(String orderNo, String orderDate, String customer, String cr
             for (String orderItem : orderItems) {
                 boolean orderItemInRestaurant = false; //boolean for whether this item ordered is on the menu for this restaurant
                 //see if that item is in the restaurant's menu
-                for (Item item : restaurant.getMenu()) {
-                    if (item.getName().equals(orderItem)) { //if the names of the item ordered and the menu item are the same, this item is on the menu for this restaurant
+                for (Item item : restaurant.menu()) {
+                    if (item.name().equals(orderItem)) { //if the names of the item ordered and the menu item are the same, this item is on the menu for this restaurant
                         orderItemInRestaurant = true;
-                        cost += item.getPriceInPence(); //add item cost to total delivery cost
+                        cost += item.priceInPence(); //add item cost to total delivery cost
                         break;
                     }
                 }
@@ -122,8 +114,8 @@ public record Order(String orderNo, String orderDate, String customer, String cr
      */
     public boolean isPizzaValid(String pizza, Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
-            for (Item item: restaurant.getMenu()){
-                if (item.getName().equals(pizza)){
+            for (Item item: restaurant.menu()){
+                if (item.name().equals(pizza)){
                     return true;
                 }
             }
@@ -214,14 +206,14 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     }
 
     /**
-     * Gets the restaurant from which this order's pizzas have been ordered from (assuming the order is valid)
+     * Gets the restaurant from which this order's pizzas have been ordered from (assuming the order is valid).
      * @param restaurants   An array of restaurants pizzas can be ordered from, each as Restaurant objects.
      * @return  The restaurant from which the pizzas have been ordered.
      */
     public Restaurant getRestaurant(Restaurant[] restaurants){
         for (Restaurant restaurant: restaurants){
-            for (Item item: restaurant.getMenu()){
-                if (item.getName().equals(this.orderItems[0])){
+            for (Item item: restaurant.menu()){
+                if (item.name().equals(this.orderItems[0])){
                     return restaurant;
                 }
             }
@@ -230,7 +222,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     }
 
     /**
-     * Returns a list of orders, sorted in ascending order by distance between a starting position and the restaurant the order is picked up from .
+     * Returns a list of orders, sorted in ascending order by distance between a starting position and the restaurant the order is picked up from
      * @param orders    List of orders the drone is trying to deliver.
      * @param restaurants   List of restaurants pizzas can be ordered from.
      * @param position  Starting position of the drone.
@@ -239,8 +231,8 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     public static ArrayList<Order> sortOrders(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
-            // distance from the given position to the order's restaurant, note the coordinates wont be null as it would have caused a jackson error
-            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
+            // distance from the given position to the order's restaurant, note the coordinates won't be null as it would have caused a jackson error
+            double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).longitude(),order.getRestaurant(restaurants).latitude()));
             // create order number, distance pair
             String[] orderInfo = {order.orderNo, Double.toString(dist)};
             orderInfos.add(orderInfo);

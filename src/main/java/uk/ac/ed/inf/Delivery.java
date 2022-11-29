@@ -1,7 +1,7 @@
 package uk.ac.ed.inf;
 
 /**
- * Delivery outcome of a specific order, as specified for the deliveries.json file
+ * Delivery outcome of a specific order, as specified for the deliveries.json file.
  */
 public class Delivery {
     private final String orderNo;
@@ -9,7 +9,7 @@ public class Delivery {
     private final int costInPence;
 
     /**
-     * Default constructor for the Delivery class
+     * Default constructor for the Delivery class.
      * @param orderNo       The order number of the order being delivered, as a String.
      * @param outcome       The outcome of the order, this is a String which can take the values specified in the OrderOutcome Enum or 'Valid' (before flightpath calculated)
      * @param costInPence   The cost of the order in pence, as an integer.
@@ -20,18 +20,26 @@ public class Delivery {
         this.costInPence = costInPence;
     }
 
+    /**
+     * Returns the delivery's order number.
+     * @return  The order number of the delivery.
+     */
     public String getOrderNo() {
         return orderNo;
     }
 
     /**
-     *
+     * Returns the outcome of the delivery.
      * @return  Order outcome as a string, can take the values defined in the OrderOutcome Enum.
      */
     public String getOutcome() {
         return outcome;
     }
 
+    /**
+     * Returns the delivery's total cost in pence.
+     * @return  Total cost in pence.
+     */
     public int getCostInPence() {
         return costInPence;
     }
@@ -46,7 +54,7 @@ public class Delivery {
         Delivery[] deliveries = new Delivery[orders.length];
         for (int i = 0; i < orders.length; i++) {
             // sets the order's outcome to the reason if invalid, else valid
-            deliveries[i] = new Delivery(orders[i].getOrderNo(), orders[i].getValidity(restaurants), orders[i].getPriceTotalInPence());
+            deliveries[i] = new Delivery(orders[i].orderNo(), orders[i].getValidity(restaurants), orders[i].priceTotalInPence());
         }
         return deliveries;
     }
@@ -58,7 +66,7 @@ public class Delivery {
      */
     public static void setDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
-            if (delivery.orderNo.equals(order.getOrderNo())){
+            if (delivery.orderNo.equals(order.orderNo())){
                 delivery.outcome = OrderOutcome.Delivered.toString();
             }
         }
@@ -71,7 +79,7 @@ public class Delivery {
      */
     public static void setValidNotDelivered(Delivery[] deliveries, Order order){
         for (Delivery delivery: deliveries){
-            if (delivery.orderNo.equals(order.getOrderNo())){
+            if (delivery.orderNo.equals(order.orderNo())){
                 delivery.outcome = OrderOutcome.ValidButNotDelivered.toString();
             }
         }

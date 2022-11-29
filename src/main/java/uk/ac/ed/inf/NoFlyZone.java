@@ -17,13 +17,6 @@ import java.util.List;
 public record NoFlyZone(String name, double[][] coordinates) {
 
     /**
-     * @return  List of co-ordinate pairs that define the vertices of the No-Fly Zone polygon in the format required for a mapbox.geojson Polygon.
-     */
-    public double[][] getCoordinates() {
-        return coordinates;
-    }
-
-    /**
      * Retrieves the No-Fly Zones from the REST server.
      * @param baseUrlStr    The base of the URL from which the No-Fly Zones are retrieved.
      * @return  A MultiPolygon object of the No-Fly Zones.
@@ -40,7 +33,7 @@ public record NoFlyZone(String name, double[][] coordinates) {
                 List<List<Point>> points = new ArrayList<>();
                 // initialise first list in points, which holds the vertices that define polygon
                 points.add(new ArrayList<>());
-                for (double[] point: zone.getCoordinates()) {
+                for (double[] point: zone.coordinates()) {
                     // add each point in the no-fly zone to the formatted list of points
                     points.get(0).add(Point.fromLngLat(point[0], point[1]));
                 }
@@ -101,7 +94,7 @@ public record NoFlyZone(String name, double[][] coordinates) {
      * which solves the problem in terms of Bezier parameters, t and u.
      * @param line1 First line, a LineString.
      * @param line2 Second line, a LineString.
-     * @return  A boolean for whether the two lines segments intersect eachother.
+     * @return  A boolean for whether the two lines segments intersect each other.
      */
     public static boolean linesIntersect(LineString line1, LineString line2){
         double latstart1 = line1.coordinates().get(0).latitude(); //x1

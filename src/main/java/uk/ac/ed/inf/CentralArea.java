@@ -14,8 +14,8 @@ public class CentralArea {
     private LngLat[] points;
 
     /**
-     *
-     * @return Co-ordinates of the vertices of the rectangular central area, starting top left and moving anti-clockwise
+     * Returns the four vertices of the central area, starting top left and moving anti-clockwise.
+     * @return Array of LngLat objects.
      */
     public LngLat[] getPoints(){
         return points;

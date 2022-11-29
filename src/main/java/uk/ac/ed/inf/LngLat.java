@@ -16,7 +16,7 @@ public record LngLat(double longitude, double latitude){
     /**
      * Returns whether the point represented by this LngLat object is within the central area, which is represented by the CentralArea class.
      * @return Boolean value for whether the point defined by this LngLat object is within the central area.
-     * @param url The URL that the central area co-ordinates are accessed from
+     * @param url The URL that the central area co-ordinates are accessed from.
      */
     public boolean inCentralArea(URL url){
         CentralArea centralArea = CentralArea.getInstance(url);

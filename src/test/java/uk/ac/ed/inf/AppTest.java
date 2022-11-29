@@ -12,7 +12,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * Unit test for simple App.
+ * Unit tests for the program.
  */
 public class AppTest 
     extends TestCase
@@ -36,13 +36,8 @@ public class AppTest
     }
 
     /**
-     * Rigourous Test :-)
+     * Check
      */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
-
     public void testGetThreeRestaurants(){
         try {
             Restaurant[] restaurants = Restaurant.getRestaurantsFromRestServer(new URL("https://ilp-rest.azurewebsites.net/"));

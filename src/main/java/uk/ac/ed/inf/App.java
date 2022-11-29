@@ -10,6 +10,9 @@ import com.mapbox.geojson.*;
 
 import java.util.*;
 
+/**
+ * Main class for the whole program, this is the entry point of the whole application.
+ */
 public class App {
     /**
      * Invokes the program.
@@ -49,7 +52,7 @@ public class App {
                         for (Order order : sortedOrders) {
                             // if order is valid
                             if (order.getValidity(restaurants).equals("Valid")) {
-                                Restaurant restaurant = order.getRestaurant(restaurants); // restaurants wont be null as it would have caused a jackson exception
+                                Restaurant restaurant = order.getRestaurant(restaurants); // restaurants won't be null as it would have caused a jackson exception
                                 // construct the path to and from the restaurant
                                 List<DroneMove> orderPath = makeFullOrderPath(position, order, restaurant, noFlyZone, startTicks, centralURL);
                                 // if the flightpath would exceed 2000 moves, add the constructed path to the total flightpath and set the order to delivered
@@ -74,7 +77,7 @@ public class App {
     }
 
     /**
-     * Creates the 3 required files; deliveries.json, drone.geojson, flightpath.json
+     * Creates the 3 required files; deliveries.json, drone.geojson, flightpath.json.
      * @param date  Date all the pizzas have been ordered on.
      * @param deliveries    The delivery information for each of the pizzas.
      * @param flightpath    The flightpath the drone took.
@@ -87,7 +90,7 @@ public class App {
     }
 
     /**
-     * Check that all the URLs that are required during the running of the program exist and are valid, ie do not trigger an exception.
+     * Check that all the URLs that are required during the running of the program exist and are valid, ie do not trigger an exception and are not null.
      * @param baseUrlStr    The base of the URL through which the REST server is accessed.
      * @param date  The date the pizzas have been ordered on.
      * @return  A boolean for whether the URLs required are valid.
@@ -125,7 +128,7 @@ public class App {
      * @param noFlyZone The No-Fly zones of the central area, which the drone should avoid flying through.
      * @param order     The order which the drone is attempting to deliver.
      * @param startTicks         The initial number of ticks of the first calculation.
-     * @param centralURL    URL of the Central Area
+     * @param centralURL    URL of the Central Area.
      * @return          A list of drone moves generated for this part of the flightpath.
      */
     public static List<DroneMove> makeOrderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks, URL centralURL){
@@ -136,12 +139,12 @@ public class App {
             float bestMove = findBestMove(position, goal, noFlyZone, explored, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
             // add the move to the flight path for that order
-            orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
+            orderPath.add(new DroneMove(order.orderNo(), position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
             // mark the position of the drone as explored
             explored.add(position);
             position = newPosition;
         }
-        orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude() , position.longitude(), position.latitude(), System.currentTimeMillis() - startTicks));
+        orderPath.add(new DroneMove(order.orderNo(), position.longitude(), position.latitude() , position.longitude(), position.latitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
     }
 
@@ -200,15 +203,15 @@ public class App {
      */
     public static List<DroneMove> makeFullOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL centralURL){
         // make the one-way order path from the start location to the restaurant for the order
-        List<DroneMove> orderPath = (makeOrderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, centralURL));
+        List<DroneMove> orderPath = (makeOrderPathToGoal(position, new LngLat(restaurant.longitude(), restaurant.latitude()), noFlyZone, order, startTicks, centralURL));
         // iterate through the flight path in reverse order
         for (int i = orderPath.size() - 2; i >= 0; i--){
             // move the drone in the reverse direction as the move in the path
             float newAngle = ((Float.parseFloat(orderPath.get(i).getAngle())+ 180) % 360);
             LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude());
-            orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
+            orderPath.add(new DroneMove(order.orderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));
         }
-        orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(),  orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), System.currentTimeMillis() - startTicks));
+        orderPath.add(new DroneMove(order.orderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(),  orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), System.currentTimeMillis() - startTicks));
         return orderPath;
     }
     /**

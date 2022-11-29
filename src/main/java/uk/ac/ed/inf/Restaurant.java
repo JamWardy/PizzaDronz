@@ -11,18 +11,6 @@ import java.net.URL;
  */
 public record Restaurant(String name, double longitude, double latitude, Item[] menu) {
 
-    public double getLongitude(){
-        return longitude;
-    }
-
-    public double getLatitude(){
-        return latitude;
-    }
-
-    public Item[] getMenu(){
-        return menu;
-    }
-
     /**
      * Performs a REST-request, retrieves the list of restaurants as a JSON, deserializes this
      * into an array of Restaurant objects and then returns this array.

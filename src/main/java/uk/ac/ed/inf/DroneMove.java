@@ -124,7 +124,8 @@ public class DroneMove {
         for (DroneMove move : flightpath) {
             coordinates.add(Point.fromLngLat(move.getFromLongitude(), move.getFromLatitude()));
         }
-        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).getFromLongitude(), flightpath.get(flightpath.size() - 1).getFromLatitude()));
+        // add the final position of the drone
+        coordinates.add(Point.fromLngLat(flightpath.get(flightpath.size() - 1).getToLongitude(), flightpath.get(flightpath.size() - 1).getToLatitude()));
         return coordinates;
     }
 }

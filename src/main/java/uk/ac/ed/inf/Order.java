@@ -264,11 +264,15 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     public static ArrayList<Order> sortOrders(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
+            // distance from the given position to the order's restaurant
             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
+            // create order number, distance pair
             String[] orderInfo = {order.orderNo, Double.toString(dist)};
             orderInfos.add(orderInfo);
         }
+        // sort the pairs by distance
         orderInfos.sort(Comparator.comparingDouble(o -> Double.parseDouble(o[1])));
+        // turn the pairs into a list of orders in the sorted arrangement
         ArrayList<Order> sortedOrders = new ArrayList<>();
         for (String[] each: orderInfos){
             sortedOrders.add(getOrderFromOrderNo(each[0], orders));

@@ -45,6 +45,7 @@ public class Delivery {
     public static Delivery[] getDeliveries(Order[] orders, Restaurant[] restaurants){
         Delivery[] deliveries = new Delivery[orders.length];
         for (int i = 0; i < orders.length; i++) {
+            // sets the order's outcome to the reason if invalid, else valid
             deliveries[i] = new Delivery(orders[i].getOrderNo(), orders[i].getValidity(restaurants), orders[i].getPriceTotalInPence());
         }
         return deliveries;

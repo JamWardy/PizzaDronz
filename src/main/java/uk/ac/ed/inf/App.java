@@ -95,15 +95,18 @@ public class App {
     public static boolean checkURLS(String baseUrlStr, String date){
         boolean ok = false;
         try{
+            // check creating the URLs does not create malformed URL exception
             URL baseUrl = new URL(baseUrlStr);
             URL orderUrl = new URL(baseUrl + "orders/" + date);
             URL centralAreaURL = new URL(baseUrl + "centralArea/");
             URL noFlyUrl = new URL(baseUrl + "noFlyZones/");
             URL restaurantsUrl = new URL(baseUrl + "restaurants/");
+            // check retrieving and parsing the data does not give an error
             new ObjectMapper().readValue(orderUrl, Order[].class);
             new ObjectMapper().readValue(centralAreaURL, LngLat[].class);
             new ObjectMapper().readValue(noFlyUrl, NoFlyZone[].class);
             new ObjectMapper().readValue(restaurantsUrl, Restaurant[].class);
+            // if no error, the URLs are fine
             ok = true;
         }
         catch (MalformedURLException e){
@@ -128,10 +131,13 @@ public class App {
     public static List<DroneMove> makeOrderPathToGoal(LngLat position, LngLat goal, MultiPolygon noFlyZone, Order order, long startTicks, URL centralURL){
         List<DroneMove> orderPath = new ArrayList<>();
         List<LngLat> explored = new ArrayList<>();
+        // find moves until goal is reached
         while (!position.closeTo(goal)) {
             float bestMove = findBestMove(position, goal, noFlyZone, explored, centralURL);
             LngLat newPosition = position.nextPosition(bestMove);
+            // add the move to the flight path for that order
             orderPath.add(new DroneMove(order.getOrderNo(), position.longitude(), position.latitude(), Float.toString(bestMove), newPosition.longitude(), newPosition.latitude(), System.currentTimeMillis() - startTicks));
+            // mark the position of the drone as explored
             explored.add(position);
             position = newPosition;
         }
@@ -193,8 +199,11 @@ public class App {
      * @return  Section of the flightpath, as a list of drone moves.
      */
     public static List<DroneMove> makeFullOrderPath(LngLat position, Order order, Restaurant restaurant, MultiPolygon noFlyZone, long startTicks, URL centralURL){
+        // make the one-way order path from the start location to the restaurant for the order
         List<DroneMove> orderPath = (makeOrderPathToGoal(position, new LngLat(restaurant.getLongitude(), restaurant.getLatitude()), noFlyZone, order, startTicks, centralURL));
+        // iterate through the flight path in reverse order
         for (int i = orderPath.size() - 2; i >= 0; i--){
+            // move the drone in the reverse direction as the move in the path
             float newAngle = ((Float.parseFloat(orderPath.get(i).getAngle())+ 180) % 360);
             LngLat pos = new LngLat(orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude());
             orderPath.add(new DroneMove(order.getOrderNo(), orderPath.get(orderPath.size()-1).getToLongitude(), orderPath.get(orderPath.size()-1).getToLatitude(), Float.toString(newAngle), pos.nextPosition(newAngle).longitude(), pos.nextPosition(newAngle).latitude(), System.currentTimeMillis() - startTicks));

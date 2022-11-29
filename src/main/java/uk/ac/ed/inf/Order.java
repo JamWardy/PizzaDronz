@@ -240,7 +240,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     public static ArrayList<Order> sortOrders(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
-            // distance from the given position to the order's restaurant, note the coordinates wont be null as it would have causeda jackson error
+            // distance from the given position to the order's restaurant, note the coordinates wont be null as it would have caused a jackson error
             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
             // create order number, distance pair
             String[] orderInfo = {order.orderNo, Double.toString(dist)};

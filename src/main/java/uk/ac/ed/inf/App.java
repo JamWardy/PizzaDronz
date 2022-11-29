@@ -49,7 +49,7 @@ public class App {
                         for (Order order : sortedOrders) {
                             // if order is valid
                             if (order.getValidity(restaurants).equals("Valid")) {
-                                Restaurant restaurant = order.getRestaurant(restaurants);
+                                Restaurant restaurant = order.getRestaurant(restaurants); // restaurants wont be null as it would have caused a jackson exception
                                 // construct the path to and from the restaurant
                                 List<DroneMove> orderPath = makeFullOrderPath(position, order, restaurant, noFlyZone, startTicks, centralURL);
                                 // if the flightpath would exceed 2000 moves, add the constructed path to the total flightpath and set the order to delivered
@@ -112,7 +112,7 @@ public class App {
         catch (MalformedURLException e){
             System.err.println("Malformed URL, please check URL protocol");
         }
-        catch(IOException e){
+        catch (IOException e){
             System.err.println("I/O Exception, please check connection and input data");
         }
         return ok;

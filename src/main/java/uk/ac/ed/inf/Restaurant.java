@@ -10,9 +10,6 @@ import java.net.URL;
  * and an array of Menu objects on offer by the restaurant.
  */
 public record Restaurant(String name, double longitude, double latitude, Item[] menu) {
-    public String getName(){
-        return name;
-    }
 
     public double getLongitude(){
         return longitude;
@@ -36,13 +33,12 @@ public record Restaurant(String name, double longitude, double latitude, Item[] 
         try {
             //adds a / to the base url if there is not one already
             if (!serverBaseAddress.toString().endsWith("/")) {
-                serverBaseAddress = new URL(serverBaseAddress.toString() + "/");
+                serverBaseAddress = new URL(serverBaseAddress + "/");
             }
             // create a new url with restaurants/ added to the base url
-            URL restaurantAddress = new URL(serverBaseAddress.toString() + "restaurants/");
+            URL restaurantAddress = new URL(serverBaseAddress + "restaurants/");
             // get JSON from REST-request and parse this into an array of Restaurant objects
-            Restaurant[] restaurants = new ObjectMapper().readValue(restaurantAddress, Restaurant[].class);
-            return restaurants;
+            return new ObjectMapper().readValue(restaurantAddress, Restaurant[].class);
         } catch (IOException e) {
             e.printStackTrace();
         }

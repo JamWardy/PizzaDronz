@@ -29,12 +29,7 @@ public record LngLat(double longitude, double latitude){
         if (this.longitude >= centralArea.getPoints()[2].longitude || this.latitude <= centralArea.getPoints()[2].latitude){
             return false;
         }
-        if (this.longitude >= centralArea.getPoints()[3].longitude || this.latitude >= centralArea.getPoints()[3].latitude){
-            return false;
-        }
-        else{
-            return true;
-        }
+        return !(this.longitude >= centralArea.getPoints()[3].longitude) && !(this.latitude >= centralArea.getPoints()[3].latitude);
     }
 
     /**
@@ -81,8 +76,7 @@ public record LngLat(double longitude, double latitude){
         else {
             double newLatitude = this.latitude + Math.cos(Math.toRadians(move)) * 0.00015;
             double newLongitude = this.longitude + Math.sin(Math.toRadians(move)) * 0.00015;
-            LngLat newPosition = new LngLat(newLongitude, newLatitude);
-            return newPosition;
+            return new LngLat(newLongitude, newLatitude);
         }
     }
 }

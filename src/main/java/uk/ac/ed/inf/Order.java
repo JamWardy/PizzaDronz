@@ -18,32 +18,9 @@ public record Order(String orderNo, String orderDate, String customer, String cr
         return orderNo;
     }
 
-    public String getOrderDate(){
-        return orderDate;
-    }
-
-    public String getCustomer() {
-        return customer;
-    }
-
-    public String getCreditCardNumber() {
-        return creditCardNumber;
-    }
-
-    public String getCreditCardExpiry() {
-        return creditCardExpiry;
-    }
-
-    public String getCvv() {
-        return cvv;
-    }
 
     public int getPriceTotalInPence(){
         return priceTotalInPence;
-    }
-
-    public String[] getOrderItems() {
-        return orderItems;
     }
 
     /**
@@ -63,7 +40,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
         }
         int cost = 0;
         //check if all order items are from the same restaurant
-        boolean sameRestaurant = true;
+        boolean sameRestaurant;
         for (Restaurant restaurant: restaurants) {
             sameRestaurant = true; //boolean that identifies whether all items ordered are from this restaurant
             //check each item that has been ordered
@@ -99,8 +76,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     public static Order[] getOrders(String baseUrl, String date){
         try{
             URL url = new URL(baseUrl + "orders/" + date);
-            Order[] orders = new ObjectMapper().readValue(url, Order[].class);
-            return orders;
+            return new ObjectMapper().readValue(url, Order[].class);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -264,7 +240,7 @@ public record Order(String orderNo, String orderDate, String customer, String cr
     public static ArrayList<Order> sortOrders(Order[] orders, Restaurant[] restaurants, LngLat position){
         ArrayList<String[]> orderInfos = new ArrayList<>();
         for (Order order: orders){
-            // distance from the given position to the order's restaurant
+            // distance from the given position to the order's restaurant, note the coordinates wont be null as it would have causeda jackson error
             double dist = position.distanceTo(new LngLat(order.getRestaurant(restaurants).getLongitude(),order.getRestaurant(restaurants).getLatitude()));
             // create order number, distance pair
             String[] orderInfo = {order.orderNo, Double.toString(dist)};

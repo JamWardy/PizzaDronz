@@ -16,10 +16,6 @@ import java.util.List;
  */
 public record NoFlyZone(String name, double[][] coordinates) {
 
-    public String getName() {
-        return name;
-    }
-
     /**
      * @return  List of co-ordinate pairs that define the vertices of the No-Fly Zone polygon in the format required for a mapbox.geojson Polygon.
      */
@@ -55,7 +51,7 @@ public record NoFlyZone(String name, double[][] coordinates) {
             return MultiPolygon.fromPolygons(polygons);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("I/O Exception, please check connection and input data");
             return null;
         }
     }

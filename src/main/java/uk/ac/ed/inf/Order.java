@@ -18,7 +18,6 @@ public record Order(String orderNo, String orderDate, String customer, String cr
         return orderNo;
     }
 
-
     public int getPriceTotalInPence(){
         return priceTotalInPence;
     }
